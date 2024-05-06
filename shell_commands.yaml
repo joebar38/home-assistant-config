@@ -1,0 +1,25 @@
+########################################
+# PICADRE
+########################################
+turn_off_cadrepi: "ssh -i /config/ssh_keys/id_rsa_homeassistant -o 'StrictHostKeyChecking=no' user@123.456.7.89 sudo shutdown -h now"
+update_cadrepi: "ssh -i /config/ssh_keys/id_rsa_homeassistant -o 'StrictHostKeyChecking=no' user@123.456.7.89 sudo apt update && sudo apt upgrade -y"
+
+########################################
+# PARSECPI
+########################################
+turn_off_parsecpi: "ssh -i /config/ssh_keys/id_rsa_homeassistant -o 'StrictHostKeyChecking=no' user@123.456.7.89 sudo shutdown -h now"
+update_parsecpi: "ssh -i /config/ssh_keys/id_rsa_homeassistant -o 'StrictHostKeyChecking=no' user@123.456.7.89 sudo apt-get update"
+upgrade_parsecpi: "ssh -i /config/ssh_keys/id_rsa_homeassistant -o 'StrictHostKeyChecking=no' user@123.456.7.89 sudo apt-get upgrade -y"
+
+########################################
+# FRTZ13 GAZPAR
+########################################
+#grdf_get_data: !secret grdf_get_data
+#grdf_delete_data: '/config/gazpar/gazpar_ha.sh delete'
+
+########################################
+# DOODS2
+########################################
+nettoyage_historiques_media: 'find /media/detections/verifications/camera.*/historique -depth -mindepth 1 -mtime +10 -delete'
+copy_cuisine_video: 'cp /media/detections/captures/cuisine_detection.mp4 /media/detections/verifications/camera.cuisine/historique_videos/$(date +"%Y-%m-%d.%H:%M:%S").mp4'
+copy_salon_video: 'cp /media/detections/captures/salon_detection.mp4 /media/detections/verifications/camera.salon/historique_videos/$(date +"%Y-%m-%d.%H:%M:%S").mp4'

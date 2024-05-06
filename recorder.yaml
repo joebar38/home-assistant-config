@@ -1,0 +1,32 @@
+  db_url: !secret db_mysql
+  auto_purge: true
+  commit_interval: 15
+  include:
+    domains:
+      - binary_sensor
+      - input_boolean
+      - input_datetime
+      - input_number
+      - input_select
+      - sensor
+      - switch
+      - person
+      - device_tracker
+      - light
+      - climate
+      - button
+
+  exclude:
+    domains:
+      - camera
+      - zone
+      - automation
+      - sun
+      - weather
+      - cover
+      - group
+      - script
+      - pool_pump
+      - calendar
+      - group
+      - update

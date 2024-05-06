@@ -1,0 +1,7 @@
+########################################
+# SAVOIR INUTILE
+########################################
+- resource: https://www.savoir-inutile.com/
+  sensor:
+    - name: Savoir Inutile
+      select: "#phrase"

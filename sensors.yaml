@@ -1,0 +1,1882 @@
+########################################
+# HEURE ET DATE
+########################################
+- platform: time_date
+  display_options:
+    - "time"
+    - "date"
+
+
+########################################
+# VACANCES SCOLAIRES
+########################################
+- platform: rest
+  scan_interval: '00:30:00'
+  name: vacances_scolaires
+  json_attributes_path: "$.records[0].fields"
+  json_attributes:
+    - start_date
+    - end_date
+    - description
+  resource_template: |-
+      {% set location = 'TA_VILLE' %}
+      {% set rows = '1'%}
+      {% set aujourdhui = now().strftime('%Y-%m-%d')%}
+      {% set dayOfYear =  now().strftime('%j') %}
+      {% set year =  now().strftime('%Y') | int %}
+      {% set lastYear = year - 1 %}
+      {% set nextYear = year + 1 %}
+      {% if dayOfYear > '244' %}
+      {% set schoolYear = (year | string) + "-" + (nextYear | string) %}
+      {%- else -%}
+      {% set schoolYear = (lastYear | string) + "-" + (year | string) %}
+      {%- endif %}
+      https://data.education.gouv.fr/api/records/1.0/search/?dataset=fr-en-calendrier-scolaire&facet=start_date&facet=end_date&rows={{rows}}&refine.location={{location}}&sort=-end_date&q=end_date%3E={{aujourdhui}}
+  value_template: |-
+      {% set aujourdhui = now().strftime('%Y-%m-%d')%}
+      {% for record in value_json.records -%}
+      {% if aujourdhui >= record.fields.start_date and aujourdhui <= record.fields.end_date %} 
+      {%- if record.fields.description %}{{record.fields.description}} jusqu'au {{ as_timestamp(record.fields.end_date) | timestamp_custom('%d-%m-%Y') }} {% endif %}
+      {% else %} 
+      {%- if record.fields.end_date > aujourdhui and record.fields.description %} prochaines : {{record.fields.description}} {{ as_timestamp(record.fields.start_date) | timestamp_custom('%d-%m-%Y') }}{% endif %}
+      {% endif %}
+      {%- endfor %}
+
+########################################
+# HISTORIQUES
+########################################
+- platform: history_stats
+  name: Thermostat chauffe durée aujourd'hui 
+  entity_id: sensor.netatmo_hvac_action
+  state: "heating"
+  type: time
+  start: "{{ now().replace(hour=0, minute=0, second=0) }}"
+  end: "{{ now() }}"
+
+- platform: history_stats
+  name: Thermostat chauffe durée hier 
+  entity_id: sensor.netatmo_hvac_action
+  state: "heating"
+  type: time
+  start: "{{ (now().replace(hour=0, minute=0, second=0) - timedelta(days=1)).isoformat() }}"
+  end: "{{ now().replace(hour=0, minute=0, second=0).isoformat() }}"    
+
+- platform: history_stats
+  name: Thermostat chauffe durée 7 jours 
+  entity_id: sensor.netatmo_hvac_action
+  state: "heating"
+  type: time
+  start: "{{ (now() - timedelta(days=7)).isoformat() }}"
+  end: "{{ now().isoformat() }}"
+
+- platform: history_stats
+  name: Lumières allumées durée aujourd'hui 
+  entity_id: light.tout
+  state: "on"
+  type: time
+  start: "{{ now().replace(hour=0, minute=0, second=0) }}"
+  end: "{{ now() }}"
+
+- platform: history_stats
+  name: Lumières allumées durée hier 
+  entity_id: light.tout
+  state: "on"
+  type: time
+  start: "{{ (now().replace(hour=0, minute=0, second=0) - timedelta(days=1)).isoformat() }}"
+  end: "{{ now().replace(hour=0, minute=0, second=0).isoformat() }}"    
+
+- platform: history_stats
+  name: Lumières allumées durée 7 jours 
+  entity_id: light.tout
+  state: "on"
+  type: time
+  start: "{{ (now() - timedelta(days=7)).isoformat() }}"
+  end: "{{ now().isoformat() }}" 
+
+
+################################################################################
+# TEMPLATES
+################################################################################
+- platform: template
+  sensors:
+    ########################################
+    # ALARME
+    ########################################
+    alarmes_date_heure:
+      friendly_name: Etats des alarmes
+      value_template: >-
+        {% set last_changed = as_timestamp(states.group.alarmes.last_changed) | timestamp_custom("%d/%m à %Hh%M")%}
+        {% set last_changed_heure = as_timestamp(states.group.alarmes.last_changed) | timestamp_custom("à %Hh%M")%}
+        {% set last_changed_date = as_timestamp(states.group.alarmes.last_changed) | timestamp_custom("%Y-%m-%d")%}
+        {% if last_changed_date == states('sensor.date') -%}
+        aujourd'hui {{ last_changed_heure }}
+        {%- else %}
+        le {{ last_changed }}
+        {%- endif %}
+
+    alarme_maison_statut:
+      friendly_name: Etats de l'alarme
+      value_template: >-
+        {% set alarme = states('alarm_control_panel.alarmo') %}
+        {% set traduction = {'disarmed':'Désarmée', 'armed_away':'Absent', 'armed_home':'Présent', 'armed_night':'Nuit', 'armed_custom_bypass':'Personnalisé', 'arming':'Armement...', 'triggered':'Alerte !', 'pending':'Déclenchée' } %}
+        {{ traduction[alarme] }}
+
+    alarme_maison_heure:
+      friendly_name: Alarme maison heure
+      value_template: >-
+        {% set last_changed_heure = as_timestamp(states.alarm_control_panel.alarmo.last_changed) | timestamp_custom("à %Hh%M")%}
+        {% set last_changed_date = as_timestamp(states.alarm_control_panel.alarmo.last_changed) | timestamp_custom("%Y-%m-%d")%}
+          {{ last_changed_heure }}
+
+    alarme_maison_last_changed:
+      friendly_name: Alarme maison last changed
+      value_template: >-
+        {% set last_changed = as_timestamp(states.alarm_control_panel.alarmo.last_changed) | timestamp_custom("%d/%m à %Hh%M")%}
+        {% set last_changed_heure = as_timestamp(states.alarm_control_panel.alarmo.last_changed) | timestamp_custom("à %Hh%M")%}
+        {% set last_changed_date = as_timestamp(states.alarm_control_panel.alarmo.last_changed) | timestamp_custom("%Y-%m-%d")%}
+          {{ last_changed }}
+
+    alarme_maison_date_verif:
+      friendly_name: Etats des alarmes verif
+      value_template: >-
+        {% set last_changed_date = as_timestamp(states.alarm_control_panel.alarmo.last_changed) | timestamp_custom("%Y-%m-%d")%}
+        {% if last_changed_date == states('sensor.date') -%}
+        true
+        {%- else %}
+        false
+        {%- endif %}
+
+    ########################################
+    # ONDULEUR
+    ########################################
+    etat_onduleur:
+      friendly_name: Etat onduleur
+      icon_template: mdi:check-network-outline
+      value_template: >-
+        {% if is_state("sensor.eaton3s550_etat", "Online") -%}
+        Sur secteur
+        {% elif is_state("sensor.eaton3s550_etat", "On Battery") -%}
+        Sur batterie
+        {% else -%}
+        Déconnecté
+        {%- endif %}
+
+    ########################################
+    # PORTES
+    ########################################
+    porte_on:
+      friendly_name: Porte état
+      value_template: >-      
+          {%- set entities = expand('binary_sensor.portes') | selectattr('state', 'eq', 'on') | map(attribute='name') | list -%}
+          {{ entities | join(', ') if entities else 'Aucune'}}
+
+    compteur_portes:
+      friendly_name: Compteur portes ouvertes          
+      value_template: >
+          {%- set entities = expand('binary_sensor.portes') | selectattr('state', 'eq', 'on') | map(attribute='name') | list -%}
+          {{ entities | count }}
+          
+    compteur_porte_hs:
+      friendly_name: Compteur porte indisponible          
+      value_template: >-
+        {%- set entities = expand('binary_sensor.portes') | selectattr('state', 'in', ['unavailable', 'unknown']) | map(attribute='name') | list -%}
+          {{ entities | count}}
+
+    porte_hs:
+      friendly_name: Porte indisponible          
+      value_template: >-
+        {%- set entities = expand('binary_sensor.portes') | selectattr('state', 'in', ['unavailable', 'unknown']) | map(attribute='name') | list -%}
+          {{ entities | join(', ') }}
+
+    ########################################
+    # MOUVEMENTS
+    ########################################
+    mouv_on:
+      friendly_name: mouvements état
+      value_template: >-      
+          {%- set entities = expand('binary_sensor.mouvements') | selectattr('state', 'eq', 'on') | map(attribute='name') | list -%}
+          {{ entities | join(', ') if entities else 'Aucun' }}
+        
+    compteur_mouvement:
+      friendly_name: Compteur mouvement         
+      value_template: >
+          {%- set entities = expand('binary_sensor.mouvements') | selectattr('state', 'eq', 'on') | map(attribute='name') | list -%}
+          {{ entities | count }}
+
+    compteur_mouv_hs:
+      friendly_name: Compteur mouvement indisponible          
+      value_template: >-
+        {%- set entities = expand('binary_sensor.mouvements') | selectattr('state', 'in', ['unavailable', 'unknown']) | map(attribute='name') | list -%}
+        {{ entities | count }} 
+
+    mouv_hs:
+      friendly_name: Mouvement indisponible          
+      value_template: >-
+        {%- set entities = expand('binary_sensor.mouvements') | selectattr('state', 'in', ['unavailable', 'unknown']) | map(attribute='name') | list -%}
+          {{ entities | join(', ') }}
+
+    ########################################
+    # ETATS CAMERAS
+    ########################################
+    etat_camera_cuisine:
+      friendly_name: Etat caméra salon
+      value_template: >-
+        {% if is_state("switch.camera_cuisine_privacy", "on") -%}
+        Privé
+        {% else -%}
+        Streaming
+        {%- endif %} 
+
+    position_camera_salon:
+      friendly_name: Position caméra salon
+      value_template: >-
+        {% if is_state("input_text.camera_salon_1_preset", "Centre") -%}
+        Centre
+        {% elif is_state("input_text.camera_salon_1_preset", "Chatière") -%}
+        Chatière
+        {% elif is_state("input_text.camera_salon_1_preset", "Entrée") -%}
+        Entrée
+        {% elif is_state("input_text.camera_salon_1_preset", "Enregistrement") -%}
+        Enregistrement
+        {% elif is_state("input_text.camera_salon_1_preset", "Mur") -%}
+        Mur
+        {% else -%}
+        Inconnu
+        {%- endif %} 
+
+    etat_camera_salon:
+      friendly_name: Etat caméra salon
+      value_template: >-
+        {% if is_state("input_boolean.camera_salon_privacy_mode", "1") -%}
+        Privé
+        {% else -%}
+        Streaming
+        {%- endif %} 
+
+    ########################################
+    # ECOWATT PERSONNALISÉ
+    ########################################
+    ecowatt_level_today_couleur:
+      friendly_name: Ecowatt level today couleur
+      value_template: >-
+        {% if is_state("sensor.rte_ecowatt_j0", "1") -%}
+          <font color='green'>Situation normale</font>
+        {% elif is_state("sensor.rte_ecowatt_j0", "2") -%}
+          <font color='tomato'>Risques de coupures d'électricité</font>
+        {% elif is_state("sensor.rte_ecowatt_j0", "3") -%}
+          <font color='red'>Coupures d'électricité programmées</font>
+        {%- endif %}
+
+    ecowatt_level_tomorrow_couleur:
+      friendly_name: Ecowatt level tomorrow couleur
+      value_template: >-
+        {% if is_state("sensor.rte_ecowatt_j1", "1") -%}
+          <font color='green'>Situation normale</font>
+        {% elif is_state("sensor.rte_ecowatt_j1", "2") -%}
+          <font color='tomato'>Risques de coupures d'électricité</font>
+        {% elif is_state("sensor.rte_ecowatt_j1", "3") -%}
+          <font color='red'>Coupures d'électricité programmées</font>
+        {%- endif %}
+
+    ecowatt_level_in_2_days_couleur:
+      friendly_name: Ecowatt level in 2 days couleur
+      value_template: >-
+        {% if is_state("sensor.rte_ecowatt_j2", "1") -%}
+          <font color='green'>Situation normale</font>
+        {% elif is_state("sensor.rte_ecowatt_j2", "2") -%}
+          <font color='tomato'>Risques de coupures d'électricité</font>
+        {% elif is_state("sensor.rte_ecowatt_j2", "3") -%}
+          <font color='red'>Coupures d'électricité programmées</font>
+        {%- endif %}
+
+    ########################################
+    # ECOGAZ PERSONNALISÉ
+    ########################################
+    ecogaz_level_aujourd_hui_couleur:
+      friendly_name: Ecogaz level aujourd'hui couleur
+      value_template: >-
+        {% if is_state_attr('sensor.ecogaz_level_aujourd_hui', 'indice_de_couleur', 1) -%}
+          <font color='green'>Situation normale</font>
+        {% elif is_state_attr('sensor.ecogaz_level_aujourd_hui', 'indice_de_couleur', 2) -%}
+          <font color='yellow'>Consommation élevée</font>
+        {% elif is_state_attr('sensor.ecogaz_level_aujourd_hui', 'indice_de_couleur', 3) -%}
+          <font color='tomato'>Situation tendue</font>
+        {% elif is_state_attr('sensor.ecogaz_level_aujourd_hui', 'indice_de_couleur', 4) -%}
+          <font color='red'>Situation très tendue</font>
+        {%- endif %}
+
+    ecogaz_level_demain_couleur:
+      friendly_name: Ecogaz level demain couleur
+      value_template: >-
+        {% if is_state_attr('sensor.ecogaz_level_demain', 'indice_de_couleur', 1) -%}
+          <font color='green'>Situation normale</font>
+        {% elif is_state_attr('sensor.ecogaz_level_demain', 'indice_de_couleur', 2) -%}
+          <font color='yellow'>Consommation élevée</font>
+        {% elif is_state_attr('sensor.ecogaz_level_demain', 'indice_de_couleur', 3) -%}
+          <font color='tomato'>Situation tendue</font>
+        {% elif is_state_attr('sensor.ecogaz_level_demain', 'indice_de_couleur', 4) -%}
+          <font color='red'>Situation très tendue</font>
+        {%- endif %}
+
+    ecogaz_level_dans_2_jours_couleur:
+      friendly_name: Ecogaz level dans 2 jours couleur
+      value_template: >-
+        {% if is_state_attr('sensor.ecogaz_level_dans_2_jours', 'indice_de_couleur', 1) -%}
+          <font color='green'>Situation normale</font>
+        {% elif is_state_attr('sensor.ecogaz_level_dans_2_jours', 'indice_de_couleur', 2) -%}
+          <font color='yellow'>Consommation élevée</font>
+        {% elif is_state_attr('sensor.ecogaz_level_dans_2_jours', 'indice_de_couleur', 3) -%}
+          <font color='tomato'>Situation tendue</font>
+        {% elif is_state_attr('sensor.ecogaz_level_dans_2_jours', 'indice_de_couleur', 4) -%}
+          <font color='red'>Situation très tendue</font>
+        {%- endif %}
+
+    ecogaz_level_dans_3_jours_couleur:
+      friendly_name: Ecogaz level dans 3 jours couleur
+      value_template: >-
+        {% if is_state_attr('sensor.ecogaz_level_dans_3_jours', 'indice_de_couleur', 1) -%}
+          <font color='green'>Situation normale</font>
+        {% elif is_state_attr('sensor.ecogaz_level_dans_3_jours', 'indice_de_couleur', 2) -%}
+          <font color='yellow'>Consommation élevée</font>
+        {% elif is_state_attr('sensor.ecogaz_level_dans_3_jours', 'indice_de_couleur', 3) -%}
+          <font color='tomato'>Situation tendue</font>
+        {% elif is_state_attr('sensor.ecogaz_level_dans_3_jours', 'indice_de_couleur', 4) -%}
+          <font color='red'>Situation très tendue</font>
+        {%- endif %}
+
+    ecogaz_level_dans_4_jours_couleur:
+      friendly_name: Ecogaz level dans 4 jours couleur
+      value_template: >-
+        {% if is_state_attr('sensor.ecogaz_level_dans_4_jours', 'indice_de_couleur', 1) -%}
+          <font color='green'>Situation normale</font>
+        {% elif is_state_attr('sensor.ecogaz_level_dans_4_jours', 'indice_de_couleur', 2) -%}
+          <font color='yellow'>Consommation élevée</font>
+        {% elif is_state_attr('sensor.ecogaz_level_dans_4_jours', 'indice_de_couleur', 3) -%}
+          <font color='tomato'>Situation tendue</font>
+        {% elif is_state_attr('sensor.ecogaz_level_dans_4_jours', 'indice_de_couleur', 4) -%}
+          <font color='red'>Situation très tendue</font>
+        {%- endif %}
+
+    ########################################
+    # EAU
+    ########################################
+    water_last_update:
+      friendly_name: "Index compteur eau dernière MàJ"
+      value_template: "{{ as_timestamp(states.sensor.compteur_d_eau.last_changed) | timestamp_custom('%d/%m/%Y à %Hh%M') }}"
+
+    ########################################
+    # MYELECTRICALDATA
+    ########################################
+    enedis_conso_hier_kwh:
+      friendly_name: "ENEDIS conso hier en kWh arrondie"
+      value_template: "{{ states.sensor.linky_TON_PDL_consumption.state |float| round(2)}}"
+
+    enedis_conso_semaine_derniere:
+      friendly_name: "ENEDIS conso semaine dernière"
+      value_template: "{{ state_attr('sensor.linky_TON_PDL_consumption','last_week') |float| round(2)}}"
+
+    enedis_conso_semaine_en_cours_v2:
+      friendly_name: "ENEDIS conso cette semaine v2"
+      value_template: "{{ (states.sensor.linky_TON_PDL_consumption.attributes.current_week|float*0.2296+0.3734)|float|round(2) }}"
+
+    enedis_cout_mois_en_cours_abo:
+      friendly_name: "ENEDIS cout mois en cours (avec abo)"
+      value_template: "{{ (states.sensor.linky_TON_PDL_consumption.attributes.current_month|float*0.2296+13.41)|float|round(2) }}"
+
+    enedis_conso_mois_dernier:
+      friendly_name: "ENEDIS conso mois dernier"
+      value_template: "{{ state_attr('sensor.linky_TON_PDL_consumption' , 'last_month') |float| round(2)}}"
+
+    enedis_cout_annee_en_cours_abo:
+      friendly_name: "ENEDIS cout cette année (avec abo)"
+      value_template: "{{ (states.sensor.linky_TON_PDL_consumption.attributes.current_year|float*0.2296+160.92)|float|round(2) }}"
+
+    enedis_cout_j1:
+      friendly_name: "ENEDIS coût J-1"
+      value_template: "{{ states.sensor.linky_TON_PDL_consumption.attributes.dailyweek_cost[0]|float|round(2) }}"
+
+    enedis_cout_j2:
+      friendly_name: "ENEDIS coût J-2"
+      value_template: "{{ states.sensor.linky_TON_PDL_consumption.attributes.dailyweek_cost[1]|float|round(2) }}"
+
+    enedis_cout_j3:
+      friendly_name: "ENEDIS coût J-3"
+      value_template: "{{ states.sensor.linky_TON_PDL_consumption.attributes.dailyweek_cost[2]|float|round(2) }}"
+
+    enedis_cout_j4:
+      friendly_name: "ENEDIS coût J-4"
+      value_template: "{{ states.sensor.linky_TON_PDL_consumption.attributes.dailyweek_cost[3]|float|round(2) }}"
+
+    enedis_cout_j5:
+      friendly_name: "ENEDIS coût J-5"
+      value_template: "{{ states.sensor.linky_TON_PDL_consumption.attributes.dailyweek_cost[4]|float|round(2) }}"
+
+    enedis_cout_j6:
+      friendly_name: "ENEDIS coût J-6"
+      value_template: "{{ states.sensor.linky_TON_PDL_consumption.attributes.dailyweek_cost[5]|float|round(2) }}"
+
+    enedis_cout_j7:
+      friendly_name: "ENEDIS coût J-7"
+      value_template: "{{ states.sensor.linky_TON_PDL_consumption.attributes.dailyweek_cost[6]|float|round(2) }}"
+
+    enedis_refresh:
+      value_template: >-
+        {% if states.sensor.enedis_cout_j1.state  == "-1.0" -%}
+          refresh
+        {% elif states.sensor.enedis_cout_j1.state  == "unavailable" -%}
+          refresh
+        {% else -%}
+          ok
+        {% endif -%}
+
+    enedis_subscribed_power:
+      friendly_name: "Electricité puissance souscrite"
+      value_template: "{{ state_attr('sensor.linky_TON_PDL_consumption','subscribed_power') }}"
+
+    enedis_last_update:
+      friendly_name: "Electricité dernière MàJ"
+      value_template: "{{ as_timestamp(state_attr('sensor.linky_TON_PDL_consumption', 'lastUpdate')) | timestamp_custom('%d/%m/%Y à %Ih%M') }}"
+
+    enedis_max_power_j1:
+      friendly_name: "Puissance maximum hier"
+      unit_of_measurement: "kVA"
+      value_template: "{{ states.sensor.linky_TON_PDL_consumption.attributes.dailyweek_MP[0]|float|round(2) }}"
+
+    ########################################
+    # HA UPTIME
+    ########################################
+    uptime_ha:
+      friendly_name: "Dernier démarrage de HA"
+      value_template: >-
+        {%- set time = (as_timestamp(now()) - as_timestamp(states.sensor.uptime.last_changed)) | int  %}
+        {%- set minutes = ((time % 3600) // 60) %}
+        {%- set minutes = '{}min'.format(minutes) if minutes > 0 else '' %}
+        {%- set hours = ((time % 86400) // 3600) %}
+        {%- set hours = '{}h '.format(hours) if hours > 0 else '' %}
+        {%- set days = (time // 86400) %}
+        {%- set days = '{}j '.format(days) if days > 0 else '' %}
+        {{ '- de 1min' if time < 60 else days + hours + minutes }}
+
+    ########################################
+    # MONITEUR QUALITE D'AIR
+    ########################################
+    qualite_air_pourcentage:
+      friendly_name: "Qualité de l'air en %"
+      value_template: "{{ (100) - ((states.sensor.moniteur_qualite_air_voc.state|float(0)*100/5500)|float|round(2)|float(0))|float|round(1) }}"
+      unit_of_measurement: "%"
+
+    ########################################
+    # FREEBOX
+    ########################################
+    freebox_temp_moyenne:
+      friendly_name: "Temperature moyenne Freebox"
+      unit_of_measurement: "°C"
+      value_template: >-
+        {% if is_state("sensor.temp_moyenne_freebox", "unavailable")   -%}
+        {% else %}
+        {{ ((float(states.sensor.freebox_temperature_cpu_a.state)  + float(states.sensor.freebox_temperature_cpu_b.state)  + float(states.sensor.freebox_temperature_switch.state)) / 3) | round(0) }}
+        {% endif %}
+
+    freebox_uptime:
+      friendly_name: "Uptime Freebox"
+      value_template: >-
+        {% set uptime_seconds = states('sensor.freebox_server_uptime') | int %}
+        {% set uptime_datetime = as_timestamp(now()) - uptime_seconds %}
+        {{ uptime_datetime | timestamp_custom('%Y-%m-%dT%H:%M:%S%z', true) }}
+
+    ssd_240go_disk_use_percent:
+      friendly_name: SSD 240Go disk use percent
+      unit_of_measurement: "%"
+      icon_template: mdi:harddisk
+      value_template: >-
+        {{ (100) - (float(states.sensor.ssd_240go_free_space.state)) | round(0) }}
+
+    ########################################
+    # HA/HACS MISE A JOUR
+    ########################################
+    maj:
+      friendly_name: Mise à jour 
+      value_template: >-           
+          {% set hacs_state = states('sensor.hacs') | float(0) %}
+          {% set ha_versions_update = states('update.home_assistant_core_update') %}
+          {% set ha_os_update = states('update.home_assistant_operating_system_update') %}
+          {% set ha_supervisor_update = states('update.home_assistant_supervisor_update') %}
+          
+          {%- if hacs_state < 1 and ha_versions_update == 'off' and ha_os_update == 'off' and ha_supervisor_update == 'off' %}
+            Aucune mise à jour
+          {%- elif hacs_state > 0 or ha_versions_update == 'on' or ha_os_update == 'on' or ha_supervisor_update == 'on' %}
+            {%- if ha_versions_update == 'on' %}
+              HA Core [{{ state_attr('update.home_assistant_core_update', 'latest_version') }}]<br>
+            {%- endif %}
+            {%- if ha_supervisor_update == 'on' %}
+              HA Supervisor [{{ state_attr('update.home_assistant_supervisor_update', 'latest_version') }}]<br>
+            {%- endif %}
+            {%- if ha_os_update == 'on' %}
+              HAOS [{{ state_attr('update.home_assistant_operating_system_update', 'latest_version') }}]<br>
+            {%- endif %}
+            {%- if hacs_state > 0 %}
+              {% for repo in states.sensor.hacs.attributes.repositories %}
+                {{ repo.display_name }} [{{ repo.available_version }}]<br>
+              {% endfor %}
+            {%- endif %}
+          {%- endif %}
+
+    ########################################
+    # NETATMO
+    ########################################
+    netatmo_temperature_courante:
+      friendly_name: Température Thermostat
+      device_class: temperature
+      unique_id: sensor.netatmo_temperature_courante
+      unit_of_measurement: "°C"
+      value_template: "{{ state_attr('climate.ma_piece', 'current_temperature') }}"
+
+    netatmo_temperature_consigne:
+      friendly_name: Température consigne Thermostat
+      device_class: temperature
+      unique_id: sensor.netatmo_temperature_consigne
+      unit_of_measurement: "°C"
+      value_template: "{{ state_attr('climate.ma_piece', 'temperature') }}"
+
+    netatmo_niveau_batterie:
+      friendly_name: Niveau Batterie Thermostat
+      device_class: battery
+      unit_of_measurement: "%"
+      value_template: "{{ state_attr('climate.ma_piece', 'battery_level') }}"
+
+    netatmo_hvac_action:
+      friendly_name: Hvac action Thermostat
+      value_template: "{{ state_attr('climate.ma_piece', 'hvac_action') }}"
+
+    netatmo_hvac_modes:
+      friendly_name: Hvac modes Thermostat
+      value_template: "{{ state_attr('climate.ma_piece', 'hvac_modes') }}"
+
+    netatmo_preset_mode:
+      friendly_name: Preset mode Thermostat
+      value_template: >-
+          {% set preset = state_attr('climate.ma_piece', 'preset_mode') %}
+          {% set traduction = {'off':'Éteint', 'Schedule':'Planning', 'Frost Guard':'Hors-Gel', 'away':'Absent', 'manual':'Manuel', } %}       
+          {{ traduction[preset] if preset in traduction.keys() else 'Inconnu' }}
+
+    netatmo_temps_de_chauffe:
+      friendly_name: Temps de chauffe
+      value_template: >-
+        {% if states('sensor.netatmo_hvac_action') in ['heating'] %}
+        1
+        {% else %}
+        0
+        {% endif %}
+
+
+    ########################################
+    # MELCLOUD
+    ########################################
+    clim_salon_etat:
+      friendly_name: Clim salon état
+      value_template: >-
+          {% set preset = states('climate.salon') %}
+          {% set traduction = {'off':'Éteint', 'heat':'Chauffage', 'dry':'Déshum', 'cool':'Clim', 'fan_only':'Ventil', 'heat_cool':'Auto',} %}       
+          {{ traduction[preset] if preset in traduction.keys() else 'Inconnu' }}
+
+    clim_salon_temperature_consigne:
+      friendly_name: Clim salon température consigne
+      value_template: "{{ state_attr('climate.salon', 'temperature') }}"
+
+    clim_salon_temperature_courante:
+      friendly_name: Clim salon température consigne
+      value_template: "{{ state_attr('climate.salon', 'current_temperature') }}"
+
+    clim_salon_fan_mode:
+      friendly_name: Clim salon mode ventilation
+      value_template: "{{ state_attr('climate.salon', 'fan_mode') }}"
+
+    clim_salon_swing_mode:
+      friendly_name: Clim salon mode swing
+      value_template: "{{ state_attr('climate.salon', 'swing_mode') }}"
+
+    clim_salon_position_verticale:
+      friendly_name: Clim salon position verticale
+      value_template: "{{ state_attr('climate.salon', 'vane_vertical') }}"
+
+    clim_salon_position_horizontale:
+      friendly_name: Clim salon position horizontale
+      value_template: "{{ state_attr('climate.salon', 'vane_horizontal') }}"
+
+    clim_salon_floorplan:
+      friendly_name: Clim salon pour Floorplan
+      value_template: >-
+        {% if not is_state("sensor.clim_salon_etat", "Éteint") %}
+          {{ states('sensor.clim_salon_fan_mode') }}
+        {% else %}
+          Éteint
+        {% endif %}
+
+    clim_chambre_etat:
+      friendly_name: Clim chambre état
+      value_template: >-
+          {% set preset = states('climate.chambre') %}
+          {% set traduction = {'off':'Éteint', 'heat':'Chauffage', 'dry':'Déshum', 'cool':'Clim', 'fan_only':'Ventil', 'heat_cool':'Auto',} %}       
+          {{ traduction[preset] if preset in traduction.keys() else 'Inconnu' }}
+
+    clim_chambre_temperature_consigne:
+      friendly_name: Clim chambre température consigne
+      value_template: "{{ state_attr('climate.chambre', 'temperature') }}"
+
+    clim_chambre_temperature_courante:
+      friendly_name: Clim chambre température consigne
+      value_template: "{{ state_attr('climate.chambre', 'current_temperature') }}"
+
+    clim_chambre_fan_mode:
+      friendly_name: Clim chambre mode ventilation
+      value_template: "{{ state_attr('climate.chambre', 'fan_mode') }}"
+
+    clim_chambre_swing_mode:
+      friendly_name: Clim chambre mode swing
+      value_template: "{{ state_attr('climate.chambre', 'swing_mode') }}"
+
+    clim_chambre_position_verticale:
+      friendly_name: Clim chambre position verticale
+      value_template: "{{ state_attr('climate.chambre', 'vane_vertical') }}"
+
+    clim_chambre_position_horizontale:
+      friendly_name: Clim chambre position horizontale
+      value_template: "{{ state_attr('climate.chambre', 'vane_horizontal') }}"
+
+    clim_chambre_floorplan:
+      friendly_name: Clim chambre pour Floorplan
+      value_template: >-
+        {% if not is_state("sensor.clim_chambre_etat", "Éteint") %}
+          {{ states('sensor.clim_chambre_fan_mode') }}
+        {% else %}
+          Éteint
+        {% endif %}
+
+
+    ########################################
+    # NIGHT STATE
+    ########################################
+    night_state:
+      friendly_name: Night State
+      value_template: "{% if is_state('sun.sun', 'below_horizon') %}1{% else %}0{% endif %}"
+
+    ########################################
+    # SPOOK
+    ########################################
+    spook:
+      friendly_name: Spook problèmes trouvés
+      value_template: >
+        {% if states('sensor.active_issues')|float(0) > 0 %}
+          {{ states.sensor.active_issues.state }} problème(s)
+        {% else %}
+          false
+        {% endif %}
+
+    ########################################
+    # TEMPERATURES
+    ########################################
+    temp_appartement:
+      friendly_name: "Temperature moyenne de l'appartement'"
+      unit_of_measurement: "°C"
+      value_template: >-
+        {%- set total_temperatures = [
+            states('sensor.moniteur_qualite_air_temperature'),
+            states('sensor.netatmo_temperature_courante'),
+            states('sensor.thermo_sdb_temperature'),
+            states('sensor.thermo_chambre_temperature'),
+            states('sensor.thermo_petite_chambre_temperature')
+            ] | map('float') | sum -%}
+
+        {{ (total_temperatures / 5) | round(1) }}
+
+    temp_sejour_cuisine:
+      friendly_name: "Temperature moyenne du séjour et de la cuisine"
+      unit_of_measurement: "°C"
+      value_template: >-
+        {%- set air_temp = states('sensor.moniteur_qualite_air_temp_arrondie') | float(0) -%}
+        {%- set netatmo_temp = states('sensor.netatmo_temperature_courante') | float(0) -%}
+        {%- if air_temp is not none and netatmo_temp is not none %}
+            {{ ((air_temp + netatmo_temp) / 2) | round(1) }}
+        {%- else %}
+            Indisponible
+        {%- endif %}
+
+    temp_coin_nuit:
+      friendly_name: "Temperature moyenne du coin nuit"
+      unit_of_measurement: "°C"
+      value_template: >-
+        {%- set sdb_temp = states('sensor.thermo_sdb_temperature') | float(0) -%}
+        {%- set chambre_temp = states('sensor.thermo_chambre_temperature') | float(0) -%}
+        {%- set petite_chambre_temp = states('sensor.thermo_petite_chambre_temperature') | float(0) -%}
+        {%- if sdb_temp is not none and chambre_temp is not none and petite_chambre_temp is not none %}
+            {{ ((sdb_temp + chambre_temp + petite_chambre_temp) / 3) | round(1) }}
+        {%- else %}
+            Indisponible
+        {%- endif %}
+
+    moniteur_qualite_air_temp_arrondie:
+      friendly_name: "Moniteur qualité d'air température arrondie"
+      unit_of_measurement: "°C"
+      icon_template: mdi:thermometer
+      value_template: >-
+        {{ states.sensor.moniteur_qualite_air_temperature.state |float| round(1)}}
+
+    moniteur_qualite_air_hum_arrondie:
+      friendly_name: "Moniteur qualité d'air humidité arrondie"
+      unit_of_measurement: "%"
+      icon_template: mdi:water-percent
+      value_template: >-
+        {{ states.sensor.moniteur_qualite_air_humidity.state |float| round(1)}}
+
+    ########################################
+    # TENDANCES
+    ########################################
+    temp_appartement_tendance_icon:
+      friendly_name: Icône pour tendance temp appartement
+      value_template: >-
+        {% if state_attr('binary_sensor.trend_temp_appartement', 'gradient')|float(0) > 0 %}
+          ↑
+        {% elif state_attr('binary_sensor.trend_temp_appartement', 'gradient')|float(0)  < 0 %}
+          ↓
+        {% else %}
+          →
+        {% endif %}
+
+    temp_sejour_cuisine_tendance_icon:
+      friendly_name: Icône pour tendance temp séjour cuisine
+      value_template: >-
+        {% if state_attr('binary_sensor.trend_temp_sejour_cuisine', 'gradient')|float(0) > 0 %}
+          ↑
+        {% elif state_attr('binary_sensor.trend_temp_sejour_cuisine', 'gradient')|float(0)  < 0 %}
+          ↓
+        {% else %}
+          →
+        {% endif %}
+
+    temp_sejour_tendance_icon:
+      friendly_name: Icône pour tendance temp séjour
+      value_template: >-
+        {% if state_attr('binary_sensor.trend_temp_moniteur_qualite_air', 'gradient')|float(0) > 0 %}
+          ↑
+        {% elif state_attr('binary_sensor.trend_temp_moniteur_qualite_air', 'gradient')|float(0)  < 0 %}
+          ↓
+        {% else %}
+          →
+        {% endif %}
+
+    temp_cuisine_tendance_icon:
+      friendly_name: Icône pour tendance temp cuisine
+      value_template: >-
+        {% if state_attr('binary_sensor.trend_temp_cuisine', 'gradient')|float(0) > 0 %}
+          ↑
+        {% elif state_attr('binary_sensor.trend_temp_cuisine', 'gradient')|float(0)  < 0 %}
+          ↓
+        {% else %}
+          →
+        {% endif %}
+
+    temp_sdb_tendance_icon:
+      friendly_name: Icône pour tendance temp sdb
+      value_template: >-
+        {% if state_attr('binary_sensor.trend_temp_sdb', 'gradient')|float(0) > 0 %}
+          ↑
+        {% elif state_attr('binary_sensor.trend_temp_sdb', 'gradient')|float(0)  < 0 %}
+          ↓
+        {% else %}
+          →
+        {% endif %}
+
+    temp_chambre_tendance_icon:
+      friendly_name: Icône pour tendance temp chambre
+      value_template: >-
+        {% if state_attr('binary_sensor.trend_temp_chambre', 'gradient')|float(0) > 0 %}
+          ↑
+        {% elif state_attr('binary_sensor.trend_temp_chambre', 'gradient')|float(0)  < 0 %}
+          ↓
+        {% else %}
+          →
+        {% endif %}
+
+    temp_petite_chambre_tendance_icon:
+      friendly_name: Icône pour tendance temp petite chambre
+      value_template: >-
+        {% if state_attr('binary_sensor.trend_temp_petite_chambre', 'gradient')|float(0) > 0 %}
+          ↑
+        {% elif state_attr('binary_sensor.trend_temp_petite_chambre', 'gradient')|float(0)  < 0 %}
+          ↓
+        {% else %}
+          →
+        {% endif %}
+
+    air_tendance_icon:
+      friendly_name: Icône pour tendance air
+      value_template: >-
+        {% if state_attr('binary_sensor.trend_air', 'gradient')|float(0) > 0 %}
+          ↑
+        {% elif state_attr('binary_sensor.trend_air', 'gradient')|float(0)  < 0 %}
+          ↓
+        {% else %}
+          →
+        {% endif %}
+        
+    pm2_5_tendance_icon:
+      friendly_name: Icône pour tendance pm 2.5
+      value_template: >-
+        {% if state_attr('binary_sensor.trend_pm2_5', 'gradient')|float(0) > 0 %}
+          ↑
+        {% elif state_attr('binary_sensor.trend_pm2_5', 'gradient')|float(0)  < 0 %}
+          ↓
+        {% else %}
+          →
+        {% endif %}
+
+    pm10_tendance_icon:
+      friendly_name: Icône pour tendance pm10
+      value_template: >-
+        {% if state_attr('binary_sensor.trend_pm10', 'gradient')|float(0) > 0 %}
+          ↑
+        {% elif state_attr('binary_sensor.trend_pm10', 'gradient')|float(0)  < 0 %}
+          ↓
+        {% else %}
+          →
+        {% endif %}
+
+    cpu_tendance_icon:
+      friendly_name: Icône pour tendance temp CPU
+      value_template: >-
+        {% if state_attr('binary_sensor.trend_cpu_temp', 'gradient')|float(0) > 0 %}
+          ↑
+        {% elif state_attr('binary_sensor.trend_cpu_temp', 'gradient')|float(0)  < 0 %}
+          ↓
+        {% else %}
+          →
+        {% endif %} 
+
+    processor_tendance_icon:
+      friendly_name: Icône pour tendance utilisation CPU
+      value_template: >-
+        {% if state_attr('binary_sensor.trend_processor', 'gradient')|float(0) > 0 %}
+          ↑
+        {% elif state_attr('binary_sensor.trend_processor', 'gradient')|float(0)  < 0 %}
+          ↓
+        {% else %}
+          →
+        {% endif %} 
+
+    memory_tendance_icon:
+      friendly_name: Icône pour tendance mémoire
+      value_template: >-
+        {% if state_attr('binary_sensor.trend_memory', 'gradient')|float(0) > 0 %}
+          ↑
+        {% elif state_attr('binary_sensor.trend_memory', 'gradient')|float(0)  < 0 %}
+          ↓
+        {% else %}
+          →
+        {% endif %} 
+        
+    ssd_tendance_icon:
+      friendly_name: Icône pour tendance SSD
+      value_template: >-
+        {% if state_attr('binary_sensor.trend_disk_use', 'gradient')|float(0) > 0 %}
+          ↑
+        {% elif state_attr('binary_sensor.trend_disk_use', 'gradient')|float(0)  < 0 %}
+          ↓
+        {% else %}
+          →
+        {% endif %}  
+
+    freebox_cpu_tendance_icon:
+      friendly_name: Icône pour tendance temp Freebox CPU
+      value_template: >-
+        {% if state_attr('binary_sensor.trend_freebox_cpu_temp', 'gradient')|float(0) > 0 %}
+          ↑
+        {% elif state_attr('binary_sensor.trend_freebox_cpu_temp', 'gradient')|float(0)  < 0 %}
+          ↓
+        {% else %}
+          →
+        {% endif %} 
+
+    freebox_ssd_tendance_icon:
+      friendly_name: Icône pour tendance SSD Freebox
+      value_template: >-
+        {% if state_attr('binary_sensor.trend_freebox_ssd_use', 'gradient')|float(0) > 0 %}
+          ↑
+        {% elif state_attr('binary_sensor.trend_freebox_ssd_use', 'gradient')|float(0)  < 0 %}
+          ↓
+        {% else %}
+          →
+        {% endif %}
+
+    parsecpi_cpu_tendance_icon:
+      friendly_name: Icône pour tendance temp CPU ParsecPi
+      value_template: >-
+        {% if state_attr('binary_sensor.trend_parsecpi_cpu_use', 'gradient')|float(0) > 0 %}
+          ↑
+        {% elif state_attr('binary_sensor.trend_parsecpi_cpu_use', 'gradient')|float(0)  < 0 %}
+          ↓
+        {% else %}
+          →
+        {% endif %}
+
+    parsecpi_processor_tendance_icon:
+      friendly_name: Icône pour tendance utilisation CPU ParsecPi
+      value_template: >-
+        {% if state_attr('binary_sensor.trend_freebox_ssd_use', 'gradient')|float(0) > 0 %}
+          ↑
+        {% elif state_attr('binary_sensor.trend_freebox_ssd_use', 'gradient')|float(0)  < 0 %}
+          ↓
+        {% else %}
+          →
+        {% endif %}
+
+    parsecpi_sd_tendance_icon:
+      friendly_name: Icône pour tendance SD ParsecPi
+      value_template: >-
+        {% if state_attr('binary_sensor.trend_parsecpi_sd_use', 'gradient')|float(0) > 0 %}
+          ↑
+        {% elif state_attr('binary_sensor.trend_parsecpi_sd_use', 'gradient')|float(0)  < 0 %}
+          ↓
+        {% else %}
+          →
+        {% endif %}
+
+    parsecpi_memory_tendance_icon:
+      friendly_name: Icône pour tendance mémoire ParsecPi
+      value_template: >-
+        {% if state_attr('binary_sensor.trend_parsecpi_memory_use', 'gradient')|float(0) > 0 %}
+          ↑
+        {% elif state_attr('binary_sensor.trend_parsecpi_memory_use', 'gradient')|float(0)  < 0 %}
+          ↓
+        {% else %}
+          →
+        {% endif %}
+
+
+    ########################################
+    # HISTORIQUES
+    ########################################
+    duree_lumieres_allumees:
+      friendly_name: Durée des lumières allumées aujourd'hui          
+      value_template: >-
+          {% set heures_str = states.sensor.lumieres_allumees_duree_aujourd_hui.state %}
+          {% set heures = heures_str | float %}
+          
+          {%- set heures_int = heures | int -%}
+          {%- set minutes = (heures * 60) - (heures_int * 60) -%}
+          {%- set secondes = (heures * 3600) % 60 -%}
+          
+          {% if heures_int >= 1 %}{{ heures_int | int }}h {% endif %}{% if minutes >= 1 %}{{ minutes | int }}min {% endif %}{{ secondes | int }}sec
+
+    duree_lumieres_allumees_hier:
+      friendly_name: Durée des lumières allumées hier          
+      value_template: >-
+          {% set heures_str = states.sensor.lumieres_allumees_duree_hier.state %}
+          {% set heures = heures_str | float %}
+          
+          {%- set heures_int = heures | int -%}
+          {%- set minutes = (heures * 60) - (heures_int * 60) -%}
+          {%- set secondes = (heures * 3600) % 60 -%}
+          
+          {% if heures_int >= 1 %}{{ heures_int | int }}h {% endif %}{% if minutes >= 1 %}{{ minutes | int }}min {% endif %}{{ secondes | int }}sec
+    
+    duree_lumieres_allumees_7_jours:
+      friendly_name: Durée des lumières allumées 7 derniers jours          
+      value_template: >-
+          {% set heures_str = states.sensor.lumieres_allumees_duree_7_jours.state %}
+          {% set heures = heures_str | float %}
+          
+          {%- set jours_int = (heures // 24) | int -%}
+          {%- set heures_int = heures | int %}
+          {%- set minutes = (heures * 60) - (heures_int * 60) -%}
+          
+          {% if jours_int >= 1 %}{{ jours_int | int }}j{% if jours_int > 1 %}{% endif %} {% endif %}{% if heures_int >= 1 %}{{ heures_int % 24 }}h {% endif %}{% if minutes >= 1 %}{{ minutes | int }}min{% endif %}
+
+    duree_thermostat_allume:
+      friendly_name: Durée du thermostat allumé aujourd'hui          
+      value_template: >-
+          {% set heures_str = states.sensor.thermostat_chauffe_duree_aujourd_hui.state %}
+          {% set heures = heures_str | float %}
+          
+          {%- set heures_int = heures | int -%}
+          {%- set minutes = (heures * 60) - (heures_int * 60) -%}
+          {%- set secondes = (heures * 3600) % 60 -%}
+          
+          {% if heures_int >= 1 %}{{ heures_int | int }}h {% endif %}{% if minutes >= 1 %}{{ minutes | int }}min {% endif %}{{ secondes | int }}sec
+
+    duree_thermostat_allume_hier:
+      friendly_name: Durée du thermostat allumé hier          
+      value_template: >-
+          {% set heures_str = states.sensor.thermostat_chauffe_duree_hier.state %}
+          {% set heures = heures_str | float %}
+          
+          {%- set heures_int = heures | int -%}
+          {%- set minutes = (heures * 60) - (heures_int * 60) -%}
+          {%- set secondes = (heures * 3600) % 60 -%}
+          
+          {% if heures_int >= 1 %}{{ heures_int | int }}h {% endif %}{% if minutes >= 1 %}{{ minutes | int }}min {% endif %}{{ secondes | int }}sec
+    
+    duree_thermostat_allume_7_jours:
+      friendly_name: Durée du thermostat allumé 7 derniers jours          
+      value_template: >-
+          {% set heures_str = states.sensor.thermostat_chauffe_duree_7_jours.state %}
+          {% set heures = heures_str | float %}
+          
+          {%- set jours_int = (heures // 24) | int -%}
+          {%- set heures_int = heures | int %}
+          {%- set minutes = (heures * 60) - (heures_int * 60) -%}
+          
+          {% if jours_int >= 1 %}{{ jours_int | int }}j{% if jours_int > 1 %}{% endif %} {% endif %}{% if heures_int >= 1 %}{{ heures_int % 24 }}h {% endif %}{% if minutes >= 1 %}{{ minutes | int }}min{% endif %}
+
+    ########################################
+    # JOURS DATES ET HEURES
+    ########################################
+    heure:
+      friendly_name: "heure"
+      value_template: >-
+        {{now().hour }}h{{now().minute }}
+
+    date_numero:
+      friendly_name: "date numéro"
+      value_template: >-
+        {{now().day }}
+
+    date_jour:
+      friendly_name: "date jour"
+      value_template: >-
+        {% set days = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"]  %}
+        {{ days[now().weekday()] }}
+
+    date_mois:
+      #entity_id: sensor.date
+      friendly_name: "date mois"
+      icon_template: mdi:calendar-today
+      value_template: >
+        {% set months = ["Janvier", "Fevrier", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Decembre"] %}
+        {{  months[now().month-1] }}
+
+    date_mois_court:
+      #entity_id: sensor.date
+      friendly_name: "date mois court"
+      icon_template: mdi:calendar-today
+      value_template: >
+        {% set months = ["Janv", "Fev", "Mars", "Avril", "Mai", "Juin", "Jui", "Août", "Sept", "Oct", "Nov", "Déc"] %}
+        {{  months[now().month-1] }}  
+
+    date_simple:
+      #entity_id: sensor.date
+      friendly_name: "Date du jour"
+      icon_template: mdi:calendar-today
+      value_template: >
+        {% set months = ["Janvier", "Fevrier", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"] %}
+        {% set days = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"]  %}
+        {{ days[now().weekday()] + ' ' + now().day | string + ' ' + months[now().month-1] }}
+
+    date_simple_v2:
+      #entity_id: sensor.date
+      friendly_name: "Date du jour sans le nom du jour"
+      icon_template: mdi:calendar-today
+      value_template: >
+        {% set months = ["Janvier", "Fevrier", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Decembre"] %}
+        {{  now().day | string + ' ' + months[now().month-1] }}
+
+    date_annee:
+      friendly_name: "date année"
+      value_template: >-
+        {{ now().year }}
+
+    demain:
+      friendly_name: Jour de demain
+      value_template: >-
+        {% set demain = (as_timestamp(now())+ (86400)) | timestamp_custom("%A",true)
+          | replace('Monday', 'Lundi')
+          | replace('Tuesday', 'Mardi')
+          | replace('Wednesday', 'Mercredi')
+          | replace('Thursday', 'Jeudi')
+          | replace('Friday', 'Vendredi')
+          | replace('Saturday', 'Samedi')
+          | replace('Sunday', 'Dimanche') %}
+        {{ demain }}
+
+
+    ########################################
+    # MUSIQUE
+    ########################################
+    spotify_progression:
+      friendly_name: Spotify progression         
+      value_template: >-
+          {%- if states.media_player.spotify_TON_COMPTE.attributes.media_position is defined and 
+          states.media_player.spotify_TON_COMPTE.attributes.media_duration is defined -%}
+            {{ (((float(states.media_player.spotify_TON_COMPTE.attributes.media_position) * 100) / 
+            float(states.media_player.spotify_TON_COMPTE.attributes.media_duration)) | round(1))| round(0) }}
+          {%- else -%}
+            0
+          {%- endif %}
+
+    ########################################
+    # MESSAGE BONJOUR
+    ########################################
+    bonjour:
+      friendly_name: Bonjour
+      value_template: >-
+        {% if is_state("sun.sun", "above_horizon") -%}
+          {% set heure = states('sensor.time') %}
+          {% if heure > '05:00' and heure <= '11:45' -%}
+              Bonne matinée ☕️️
+          {% elif heure > '11:45' and heure < '13:30' -%}
+              Bon appétit 🍔
+          {% elif heure >= '13:30' and heure < '19:00' -%}
+              Bon après-midi ☕️
+          {% elif  heure >= '19:00' and heure < '23:00' -%}
+              Bonsoir ✨      
+          {% elif  heure > '23:00'  -%}
+              Bonne nuit 💤
+          {% elif  heure < '04:00'  -%}
+              Bonne nuit 💤
+          {% else %}
+              Salut 👋🏼
+          {% endif %}
+        {% elif is_state("sun.sun", "below_horizon") -%}
+          {% set heure = states('sensor.time') %}
+          {% if heure >= '05:00' and heure <= '11:45' -%}
+              Bonne matinée ☕️️
+          {% elif heure > '11:45' and heure < '13:30' -%}
+              Bon appétit 🍔
+          {% elif heure >= '13:30' and heure < '18:00' -%}
+              Bon après-midi ☕️
+          {% elif  heure >= '18:00' and heure < '23:00' -%}
+              Bonne soirée ✨      
+          {% elif  heure > '23:00'  -%}
+              Bonne nuit 💤
+          {% elif  heure < '05:00'  -%}
+              Bonne nuit 💤
+          {% else %}
+              Salut 👋🏼
+          {% endif %}
+        {% endif %}
+
+    ########################################
+    # QUALITE DE L'AIR
+    ########################################
+    pm2_5:
+      friendly_name: "PM2.5"
+      value_template: >-
+        {% if states('sensor.sensor_14770_pm2_5')| float(0) <= 10 %}
+          Bon
+        {% elif states('sensor.sensor_14770_pm2_5')| float(0) <= 20 %}
+          Moyen
+        {% elif states('sensor.sensor_14770_pm2_5')| float(0) <= 25 %}
+          Dégradé
+        {% elif states('sensor.sensor_14770_pm2_5')| float(0) <= 50 %}
+          Mauvais
+        {% elif states('sensor.sensor_14770_pm2_5')| float(0) <= 75 %}
+          Très mauvais
+        {% elif states('sensor.sensor_14770_pm2_5')| float(0) > 75 %}
+          Extrêmement mauvais
+        {%- else -%}
+          ?
+        {%- endif %}
+
+    pm10:
+      friendly_name: "PM10"
+      value_template: >-
+        {% if states('sensor.sensor_14770_pm10')| float(0) <= 20 %}
+          Bon
+        {% elif states('sensor.sensor_14770_pm10')| float(0) <= 40 %}
+          Moyen
+        {% elif states('sensor.sensor_14770_pm10')| float(0) <= 50 %}
+          Dégradé
+        {% elif states('sensor.sensor_14770_pm10')| float(0) <= 100 %}
+          Mauvais
+        {% elif states('sensor.sensor_14770_pm10')| float(0) <= 150 %}
+          Très mauvais
+        {% elif states('sensor.sensor_14770_pm10')| float(0) > 150 %}
+          Extrêmement mauvais
+        {%- else -%}
+          ?
+        {%- endif %}
+
+    qai_maison:
+      friendly_name: "QAI Maison"
+      value_template: >-
+        {% if states('sensor.qualite_air_pourcentage')| float(0) >= 98.8 %}
+          Excellent
+        {% elif states('sensor.qualite_air_pourcentage')| float(0) > 96 %}
+          Correct
+        {% elif states('sensor.qualite_air_pourcentage')| float(0) > 88 %}
+          Moyen, aération recommandée
+        {% elif states('sensor.qualite_air_pourcentage')| float(0) > 60 %}
+          Mauvais, Moyen, aération nécessaire
+        {% elif states('sensor.qualite_air_pourcentage')| float(0) >= 60 %}
+          Danger!
+        {%- else -%}
+          ?
+        {%- endif %}
+
+    ########################################
+    # METEO
+    ########################################
+    weather_temperature:
+      friendly_name: "Weather Température"
+      value_template: >-
+        {% if states.weather.TA_VILLE.state == "unavailable" -%}
+          {{ state_attr('weather.TA_VILLE' , 'temperature') }}
+        {% else -%}
+          {{ state_attr('weather.TA_VILLE' , 'temperature') }}
+        {% endif -%}
+
+    weather_temperature_v2:
+      friendly_name: "Weather Température"
+      value_template: >-
+        {% if states.weather.TA_VILLE.state == "unavailable" -%}
+          {{ state_attr('weather.TA_VILLE' , 'temperature') }}
+        {% else -%}
+          {{ state_attr('weather.TA_VILLE' , 'temperature') }}
+        {% endif -%}
+
+    weather_humidite:
+      friendly_name: "Weather Humidité"
+      value_template: "{{ state_attr('weather.TA_VILLE' , 'humidity') }}%"
+
+    weather_alert_crues:
+      friendly_name: "Alerte Inondation"
+      value_template: "{{ state_attr('sensor.DEPARTEMENT_weather_alert' , 'Inondation') }}"
+
+    weather_alert_grand_froid:
+      friendly_name: "Alerte Grand-froid"
+      value_template: "{{ state_attr('sensor.DEPARTEMENT_weather_alert' , 'Grand-froid') }}"
+
+    weather_alert_orages:
+      friendly_name: "Alerte Orages"
+      value_template: "{{ state_attr('sensor.DEPARTEMENT_weather_alert' , 'Orages') }}"
+
+    weather_alert_pluie_inondation:
+      friendly_name: "Alerte Pluie-inondation"
+      value_template: "{{ state_attr('sensor.DEPARTEMENT_weather_alert' , 'Pluie-inondation') }}"
+
+    weather_alert_vent_violent:
+      friendly_name: "Alerte Vent violent"
+      value_template: "{{ state_attr('sensor.DEPARTEMENT_weather_alert' , 'Vent violent') }}"
+
+    weather_alert_neige_verglas:
+      friendly_name: "Alerte Neige-verglas"
+      value_template: "{{ state_attr('sensor.DEPARTEMENT_weather_alert' , 'Neige-verglas') }}"
+
+    weather_alert_canicule:
+      friendly_name: "Alerte Canicule"
+      value_template: "{{ state_attr('sensor.DEPARTEMENT_weather_alert' , 'Canicule') }}"
+
+    weather_alert_avalanches:
+      friendly_name: "Alerte Avalanches"
+      value_template: "{{ state_attr('sensor.DEPARTEMENT_weather_alert' , 'Avalanches') }}"
+
+    weather_alerte_couleur_v2:
+      friendly_name: Alerte météo sans couleur
+      value_template: >-
+        {% if is_state("sensor.DEPARTEMENT_weather_alert", "Jaune") -%}
+            Vigilance Jaune  
+        {% elif is_state("sensor.DEPARTEMENT_weather_alert", "Orange") -%}
+            Vigilance Orange 
+        {% elif is_state("sensor.DEPARTEMENT_weather_alert", "Rouge") -%}
+            Vigilance Rouge 
+        {% elif is_state("sensor.DEPARTEMENT_weather_alert", "Vert") -%}
+            Aucune vigilance en cours
+        {%- endif %}
+
+    weather_alerte:
+      friendly_name: Alerte météo
+      value_template: >-
+        {% if is_state("sensor.DEPARTEMENT_weather_alert", "Vert") -%}
+        Aucune
+        {%- endif %} 
+        {% if not is_state("sensor.DEPARTEMENT_weather_alert", "Vert") -%}
+        {%- endif %} 
+        {% if is_state("sensor.weather_alert_grand_froid", "Jaune") -%} 
+        Froid {%- endif %}  
+        {% if is_state("sensor.weather_alert_canicule", "Jaune") -%} 
+        Canicule {%- endif %} 
+        {% if is_state("sensor.weather_alert_neige_verglas", "Jaune") -%} 
+        Neige / Verglas{%- endif %}  
+        {% if is_state("sensor.weather_alert_crues", "Jaune") -%} 
+        Inondation{%- endif %}  
+        {% if is_state("sensor.weather_alert_orages", "Jaune") -%} 
+        Orages{%- endif %}  
+        {% if is_state("sensor.weather_alert_vent_violent", "Jaune") -%} 
+        Vent{%- endif %}  
+        {% if is_state("sensor.weather_alert_pluie_inondation", "Jaune") -%} 
+        Pluie / Inondation{%- endif %}
+        {% if is_state("sensor.weather_alert_avalanches", "Jaune") -%} 
+        Avalanches{%- endif %}
+        {% if is_state("sensor.weather_alert_grand_froid", "Orange") -%} 
+        Froid {%- endif %}
+        {% if is_state("sensor.weather_alert_canicule", "Orange") -%} 
+        Canicule {%- endif %}
+        {% if is_state("sensor.weather_alert_neige_verglas", "Orange") -%} 
+        Neige / Verglas{%- endif %}  
+        {% if is_state("sensor.weather_alert_crues", "Orange") -%} 
+        Inondation{%- endif %}  
+        {% if is_state("sensor.weather_alert_orages", "Orange") -%} 
+        Orages{%- endif %}  
+        {% if is_state("sensor.weather_alert_vent_violent", "Orange") -%} 
+        Vent{%- endif %}  
+        {% if is_state("sensor.weather_alert_pluie_inondation", "Orange") -%} 
+        Pluie / Inondation{%- endif %}
+        {% if is_state("sensor.weather_alert_avalanches", "Orange") -%} 
+        Avalanches{%- endif %}
+        {% if is_state("sensor.weather_alert_grand_froid", "Rouge") -%} 
+        Froid {%- endif %}  
+        {% if is_state("sensor.weather_alert_canicule", "Rouge") -%} 
+        Canicule {%- endif %}  
+        {% if is_state("sensor.weather_alert_neige_verglas", "Rouge") -%} 
+        Neige / Verglas{%- endif %}  
+        {% if is_state("sensor.weather_alert_crues", "Rouge") -%} 
+        Inondation{%- endif %}  
+        {% if is_state("sensor.weather_alert_orages", "Rouge") -%} 
+        Orages{%- endif %}  
+        {% if is_state("sensor.weather_alert_vent_violent", "Rouge") -%} 
+        Vent{%- endif %}  
+        {% if is_state("sensor.weather_alert_pluie_inondation", "Rouge") -%} 
+        Pluie / Inondation{%- endif %}
+        {% if is_state("sensor.weather_alert_avalanches", "Rouge") -%} 
+        Avalanches{%- endif %}
+
+    weather_alerte2:
+      friendly_name: Alerte météo
+      value_template: >-
+        Alerte météo {{states('sensor.DEPARTEMENT_weather_alert')}} en cours:
+          {%- for attribut in ['Vent violent', 'Pluie-inondation', 'Orages', 'Inondation', 'Crues', 'Neige-verglas','Canicule', 'Grand-froid', 'Avalanches', 'Vagues-submersion'] %} 
+          {%- if state_attr('sensor.DEPARTEMENT_weather_alert', attribut) == 'Vert' and state_attr('sensor.DEPARTEMENT_weather_alert', attribut) != None -%}    
+          - {{attribut}} : {{state_attr('sensor.DEPARTEMENT_weather_alert', attribut)}}{{"\n"}}
+          {%- endif -%}
+          {% endfor %}
+
+    weather_conditions:
+      value_template: >-
+        {% set meteo = states('weather.TA_VILLE') %}
+        {% set traduction = {'cloudy':'Nuageux', 'rainy':'Pluvieux', 'partlycloudy':'Partiellement nuageux', 'clear-night':'Nuit claire', 'fog':'Brouillard', 'hail':'Grêle', 'lightning-rainy':'Pluie orageuse', 'lightning':'Orages', 'pouring':'Fortes pluies', 'snowy-rainy':'Neigeux', 'snowy':'Neigeux', 'sunny':'Ensoleillé', 'windy-variant':'Venteux', 'windy':'Venteux', 'exceptional':'Exceptionel'}%}
+        {% if not state_attr('weather.TA_VILLE', 'temperature') == 'Indisponible' -%}
+          {% if states('weather.TA_VILLE') == 'lightning-rainy' -%}
+            Pluies orageuses
+          {% elif states.sensor.TA_VILLE_rain_chance.state | float > 0 -%}
+            {{ traduction[meteo] }}
+          {% else -%}
+            {{ traduction[meteo] }}
+          {% endif -%}
+        {% else -%}
+          Pas d'info
+        {% endif -%}
+
+    weather_conditions_pluie:
+      value_template: >-
+        {% set precip = states('sensor.TA_VILLE_rain_chance') | round %}
+        {% if states.sensor.TA_VILLE_rain_chance.state | float > 0 -%}
+          {{ precip }}
+        {% else -%}
+          {{ precip }}
+        {% endif -%}
+
+    weather_conditions_neige:
+      value_template: >-
+        {% set snow = states('sensor.TA_VILLE_snow_chance') | round %}
+        {% if states.sensor.TA_VILLE_snow_chance.state | float > 0 -%}
+          {{ snow }}
+        {% else -%}
+          {{ snow }}
+        {% endif -%}
+
+    weather_conditions_ciel:
+      value_template: >-
+        {% set ciel = states('sensor.TA_VILLE_cloud_cover') | round -%}
+        {% if states.sensor.TA_VILLE_cloud_cover.state | float > 10 -%}
+          {{ ciel }}
+        {% else -%}
+          {{ ciel }}
+        {% endif -%}
+
+    weather_vent:
+      friendly_name: "Weather vent"
+      value_template: "{{ state_attr('weather.TA_VILLE' , 'wind_speed') }}"
+
+    weather_conditions_vent:
+      value_template: >-
+        {% set vent = states('sensor.weather_vent') | round -%}
+        {% if states.sensor.weather_vent.state | float > 20 -%}
+          {{ vent }}
+        {% else -%}
+          {{ vent }}
+        {% endif -%}
+
+    weather_conditions_uv:
+      value_template: >-
+        {% set uv = states('sensor.TA_VILLE_uv') | round -%}
+        {% if states.sensor.TA_VILLE_uv.state | float > 5 -%}
+          {{ uv }}
+        {% else -%}
+          {{ uv }}
+        {% endif -%}
+
+    weather_soleil:
+      friendly_name: Soleil levé couché
+      value_template: >-
+        {% if is_state("sun.sun", "above_horizon") -%}
+          Couché {{ as_timestamp(states.sun.sun.attributes.next_setting) | timestamp_custom("%-Hh%M") }} - ️L️evé {{ as_timestamp(states.sun.sun.attributes.next_rising) | timestamp_custom("%-Hh%M") }}
+        {% else %}
+          ️L️evé {{ as_timestamp(states.sun.sun.attributes.next_rising) | timestamp_custom("%-Hh%M") }} - Couché {{ as_timestamp(states.sun.sun.attributes.next_setting) | timestamp_custom("%-Hh%M") }}
+        {% endif %}
+
+    weather_leve_soleil:
+      friendly_name: Soleil levé
+      value_template: >-
+        {{ as_timestamp(states.sun.sun.attributes.next_rising) | timestamp_custom("%-Hh%M") }}
+
+    weather_couche_soleil:
+      friendly_name: Soleil couché
+      value_template: >-
+        {{ as_timestamp(states.sun.sun.attributes.next_setting) | timestamp_custom("%-Hh%M") }}
+
+    weather_temp_max:
+      friendly_name: Température max du jour
+      value_template: "{{ states.sensor.TA_VILLE_daily_forecast.attributes.forecast[0].temperature|float|round(2) }}"
+
+    weather_temp_min:
+      friendly_name: Température min du jour
+      value_template: "{{ states.sensor.TA_VILLE_daily_forecast.attributes.forecast[0].templow|float|round(0) }}"
+
+    saison:
+      friendly_name: Saisons en francais
+      value_template: >-
+        {% set saison = (states.sensor.season.state )
+          | replace('summer', 'Été')
+          | replace('spring', 'Printemps')
+          | replace('autumn', 'Automne')
+          | replace('winter', 'Hiver') %}
+        {{ saison }}
+
+    sun_elevation:
+      friendly_name: Sun Elevation
+      icon_template: mdi:weather-sunny
+      unit_of_measurement: "°"
+      value_template: >
+        {{ state_attr('sun.sun', 'elevation') }}
+
+
+    ########################################
+    # LUMIERES
+    ########################################
+    lumiere_etat:
+      friendly_name: Lumières ON 
+      value_template: >-  
+          {%- set entities = expand('light.tout') | selectattr('state', 'eq', 'on') | map(attribute='name') | list -%}
+          {{ entities | join(', ') if entities else 'Aucune'}}
+
+    compteur_lumiere:
+      friendly_name: Compteur lumières allumées          
+      value_template: >
+          {{states.light                                  
+          | reject('in', ['undefined', 'unavailable'])
+          | rejectattr('state', 'eq', 'off')
+          | rejectattr('entity_id', 'search', 'light.tout')
+          | selectattr('state', 'eq', 'on') 
+          | map(attribute='name') | list | count }}
+
+    ########################################
+    # APPAREILS CONNECTES A LA MAISON
+    ########################################
+    appareils_connectes:
+      friendly_name: Appareils connectés        
+      value_template: >-
+        {%- set entities = expand('group.connecte') | selectattr('state', 'in', ['on', 'home']) | map(attribute='name') | list -%}
+        {{ entities | join(', ') }}
+
+    appareils_charges:
+      friendly_name: Appareils chargés          
+      value_template: >-
+        {%- set entities = expand('group.appareils_charges') | selectattr('state', 'in', ['Full', 'full']) | map(attribute='name') | list -%}
+        {{ entities | join(', ') if entities else 'Aucun'}} 
+
+    ########################################
+    # APPAREILS HS AVERTISSEMENTS ET COMPTEURS
+    ########################################
+    compteur_zigbee_hs:
+      friendly_name: Compteur zigbee indisponible          
+      value_template: >-
+        {%- set entities = expand('group.zigbee') | selectattr('state', 'in', ['unavailable', 'unknown']) | map(attribute='name') | list -%}
+        {{ entities | count }} 
+          
+    zigbee_hs:
+      friendly_name: zigbee indisponible          
+      value_template: >-
+        {%- set entities = expand('group.zigbee') | selectattr('state', 'in', ['unavailable', 'unknown']) | map(attribute='name') | list -%}
+        {{ entities | join(', ') }} 
+
+    compteur_lumieres_hs:
+      friendly_name: Compteur lumières indisponibles         
+      value_template: >-
+        {%- set entities = expand('light.tout') | selectattr('state', 'in', ['unavailable', 'unknown']) | map(attribute='name') | list -%}
+        {{ entities | count }} 
+
+    lumiere_hs:
+      friendly_name: Lumières HS (automatisation lum hs notif)
+      value_template: >-  
+        {%- set entities = expand('light.tout') | selectattr('state', 'in', ['unavailable', 'unknown']) | map(attribute='name') | list -%}
+        {{ entities | join(', ') }} 
+
+    thermo_hs:
+      friendly_name: thermo indisponible          
+      value_template: >-
+        {%- set entities = expand('group.thermo') | selectattr('state', 'in', ['unavailable', 'unknown']) | map(attribute='name') | list -%}
+        {{ entities | join(', ') }}   
+
+
+    compteur_thermo_hs:
+      friendly_name: Compteur thermo indisponible          
+      value_template: >-
+        {%- set entities = expand('group.thermo') | selectattr('state', 'in', ['unavailable', 'unknown']) | map(attribute='name') | list -%}
+        {{ entities | count }}   
+
+    compteur_camera_hs:
+      friendly_name: Compteur camera indisponible          
+      value_template: >-
+        {%- set entities = expand('group.cameras') | selectattr('state', 'in', ['unavailable', 'unknown']) | map(attribute='name') | list -%}
+        {{ entities |count }} 
+
+    camera_hs:
+      friendly_name: camera indisponible          
+      value_template: >-
+        {%- set entities = expand('group.cameras') | selectattr('state', 'in', ['unavailable', 'unknown']) | map(attribute='name') | list -%}
+        {{ entities | join(', ') }} 
+
+    ########################################
+    # SURVEILLANCE SYSTEME
+    ########################################
+
+    cpu_temperature:
+      friendly_name: CPU Température
+      unit_of_measurement: "°C"
+      value_template: >-
+        {{ states.sensor.processor_temperature.state|float|round(0) }}
+
+    verif_avertissement:
+      friendly_name: Verif des avertissements
+      value_template: >-
+          {%- set systeme = is_state('sensor.systeme_avertissement', 'OK') -%}
+          {%- set rpi = is_state('sensor.avertissement_rpi', 'OK') -%}
+          {%- set spook = is_state('sensor.spook', 'false') -%}
+          {%- set batterie = is_state('sensor.batterie_faible', 'Aucune') -%}
+          {%- if systeme and rpi and spook and batterie -%}
+            true
+          {%- else %}
+            false
+          {%- endif -%}
+
+    systeme_avertissement:
+      friendly_name: Surveillance système
+      value_template: >-     
+          {%- set messages = [] -%}
+      
+          {%- set compteur = states('sensor.compteur_lumieres_hs') | int(0) -%}
+          {%- set sensor = states('sensor.lumiere_hs')  -%}
+          {%- if compteur > 1 -%}
+            {%- set messages = messages + [compteur ~ ' Lumières : ' ~ sensor] -%}
+          {%- elif compteur == 1 -%}
+            {%- set messages = messages + ['Lumière : ' ~ sensor] -%}
+          {%- endif -%}
+      
+          {%- set compteur = states('sensor.compteur_porte_hs') | int(0) -%}
+          {%- set sensor = states('sensor.porte_hs')  -%}
+          {%- if compteur > 1 -%}
+            {%- set messages = messages + [compteur ~ ' Portes : ' ~ sensor] -%}
+          {%- elif compteur == 1 -%}
+            {%- set messages = messages + ['Porte : ' ~ sensor] -%}
+          {%- endif -%}
+      
+          {%- set compteur = states('sensor.compteur_mouv_hs') | int(0) -%}
+          {%- set sensor = states('sensor.mouv_hs')  -%}
+          {%- if compteur > 1 -%}
+            {%- set messages = messages + [compteur ~ ' Mouvements : ' ~ sensor] -%}
+          {%- elif compteur == 1 -%}
+            {%- set messages = messages + ['Mouvement : ' ~ sensor] -%}
+          {%- endif -%}
+      
+          {%- if not states('sensor.zigbee_hs') %} 
+          {%- else -%}
+            {%- set messages = messages + ['Zigbee : ' ~ states.sensor.zigbee_hs.state] -%}
+          {%- endif -%}
+      
+          {%- set compteur = states('sensor.compteur_thermo_hs') | int(0) -%}
+          {%- set sensor = states('sensor.thermo_hs')  -%}
+          {%- if compteur > 1 -%}
+            {%- set messages = messages + [compteur ~ ' Thermos : ' ~ sensor] -%}
+          {%- elif compteur == 1 -%}
+            {%- set messages = messages + ['Thermo : ' ~ sensor] -%}
+          {%- endif -%}
+
+
+          {%- if messages %}
+            {{ messages | join('<br>') }}
+          {%- else %}
+            OK
+          {%- endif %}
+
+    batterie_faible:
+      friendly_name: Surveillance batteries et piles
+      value_template: >-                
+          {% set low_battery_entities = states.sensor
+            | selectattr('attributes.device_class', 'defined')
+            | selectattr('attributes.device_class', 'eq', 'battery')
+            | rejectattr('state', 'in', ['unavailable', 'unknown', '100'])
+            | rejectattr('state', 'ge', '20')
+            | map(attribute='name') | list %}
+          {% if low_battery_entities %}
+            {{ low_battery_entities | join(', ') }}
+          {% else %}
+            Aucune
+          {% endif %}
+
+    avertissement_rpi:
+      friendly_name: Surveillance RPi
+      value_template: >-
+          {%- set messages = [] -%}
+      
+          {%- set ssd = states('sensor.disk_use_percent_config') | float(0)-%}
+          {%- set temp = states('sensor.cpu_temperature') | float(0)-%}
+          {%- set ram = states('sensor.memory_use_percent') | float(0)-%} 
+          {%- set cpu = states('sensor.processor_use') | float(0)-%}
+          {%- set max = 70 -%}
+          
+          {%- if ssd < 40 %} 
+          {%- else -%}
+            {%- set messages = messages + ['SSD : ' ~ states.sensor.disk_use_percent_config.state ~' %' ] -%}
+          {%- endif -%}
+
+          {%- if temp < max %} 
+          {%- else -%}
+            {%- set messages = messages + ['Température : ' ~ states.sensor.cpu_temperature.state ~' °C' ] -%}
+          {%- endif -%}
+
+          {%- if ram < max %} 
+          {%- else -%}
+            {%- set messages = messages + ['Mémoire : ' ~ states.sensor.memory_use_percent.state ~' %' ] -%}
+          {%- endif -%}
+          
+          {%- if cpu < max %} 
+          {%- else -%}
+            {%- set messages = messages + ['Processeur : ' ~ states.sensor.processor_use.state ~' %' ] -%}
+          {%- endif -%}
+          
+          {%- if messages %}
+            {{ messages | join('<br>') }}
+          {%- else %}
+            OK
+          {%- endif %}
+
+    ########################################
+    # PERSONNES
+    ########################################
+    jeremy_heure:
+      friendly_name: Jérémy heure
+      value_template: >-
+        {{ as_timestamp(states.person.jeremy.last_changed) | timestamp_custom("%d/%m à %Hh%M") }}
+
+    emma_heure:
+      friendly_name: Emma heure
+      value_template: >-
+        {{ as_timestamp(states.person.emma.last_changed) | timestamp_custom("%d/%m à %Hh%M") }}
+
+    jeremy_duree:
+      friendly_name: Jérémy durée
+      value_template: >-        
+        {%- set time = (as_timestamp(now()) - as_timestamp(states.person.jeremy.last_changed)) | int  %}
+        {%- set minutes = ((time % 3600) // 60) %}
+        {%- set minutes = '{}min'.format(minutes) if minutes > 0 else '0min' %}
+        {%- set hours = ((time % 86400) // 3600) %}
+        {%- set hours = '{}h '.format(hours) if hours > 0 else '0h ' %}
+        {%- set days = (time // 86400) %}
+        {%- set days = '{}j '.format(days) if days > 0 else '' %}
+        {%- if time < 60 %}
+        - de 1min 
+        {%- elif time > 86400 %}
+        {{ days + hours }}
+        {%- else -%}
+        {{ days + hours + minutes}}
+        {%- endif -%}
+
+    emma_duree:
+      friendly_name: Jérémy durée
+      value_template: >-        
+        {%- set time = (as_timestamp(now()) - as_timestamp(states.person.emma.last_changed)) | int  %}
+        {%- set minutes = ((time % 3600) // 60) %}
+        {%- set minutes = '{}min'.format(minutes) if minutes > 0 else '0min' %}
+        {%- set hours = ((time % 86400) // 3600) %}
+        {%- set hours = '{}h '.format(hours) if hours > 0 else '0h ' %}
+        {%- set days = (time // 86400) %}
+        {%- set days = '{}j '.format(days) if days > 0 else '' %}
+        {%- if time < 60 %}
+        - de 1min 
+        {%- elif time > 86400 %}
+        {{ days + hours }}
+        {%- else -%}
+        {{ days + hours + minutes}}
+        {%- endif -%}
+
+    jeremy_activite:
+      friendly_name: Jérémy activité          
+      value_template: >-
+          {% set activite = states('sensor.pixel_6_jh_detected_activity') %}
+          {% set traduction = {'unknown':'Inconnu', 'walking':'Mouvement', 'tilting':'Incliné', 'still':'Stationnaire', 'Running':'Course', 'on foot':'À pied', 'on_bicycle':'À vélo', 'in_vehicle':'Conduite'} %}       
+          {{ traduction[activite] if activite in traduction.keys() else 'Inconnu' }}
+
+    emma_activite:
+      friendly_name: Emma activité          
+      value_template: >-
+          {% set activite = states('sensor.galaxy_s21_fe_detected_activity') %}
+          {% set traduction = {'unknown':'Inconnu', 'walking':'Mouvement', 'tilting':'Incliné', 'still':'Stationnaire', 'Running':'Course', 'on foot':'À pied', 'on_bicycle':'À vélo', 'in_vehicle':'Conduite'} %}       
+          {{ traduction[activite] if activite in traduction.keys() else 'Inconnu' }}
+
+    ########################################
+    # PERSONNES PRESENTES
+    ########################################
+    compteur_home:
+      friendly_name: Compteur Personnes à la maison         
+      value_template: >-
+          {%- set entities = expand('group.person') | selectattr('state', 'eq', 'home') | map(attribute='name') | list -%}
+          {{ entities | count }}
+
+    presents:
+      friendly_name: Personnes à la maison         
+      value_template: >-
+          {%- set entities = expand('group.person') | selectattr('state', 'eq', 'home') | map(attribute='name') | list -%}
+          {{ entities | join(', ') if entities else 'Personne' }}   
+
+    ########################################
+    # MODES
+    ########################################
+    compteur_modes:
+      friendly_name: Compteur modes         
+      value_template: >
+          {%- set entities = expand('group.mode') | selectattr('state', 'eq', 'on') | map(attribute='name') | list -%}
+          {{ entities | count }}
+        
+    modes:
+      friendly_name: Modes en cours
+      value_template: >-      
+          {%- set entities = expand('group.mode') | selectattr('state', 'eq', 'on') | map(attribute='name') | list -%}
+          {{ entities | join(', ') if entities else 'Aucun'}}
+
+
+    ########################################
+    # STATUT PERSONNES ET POSITIONS GPS
+    ########################################
+    jeremy_gps:
+      friendly_name: Jérémy GPS 
+      value_template: >-      
+          {%- set jeremy_state = states.sensor.pixel_6_jh_geocoded_location.state -%}
+          
+          {%- set location = states.sensor.pixel_6_jh_geocoded_location.attributes -%}
+          
+          {%- if jeremy_state == "home" -%}
+            Maison
+          {%- elif jeremy_state == "not_home" and location -%}
+            {{ location.Name }} {{ state_attr('sensor.pixel_6_jh_geocoded_location', 'Postal Code') }} {{ location.Locality }}
+          {%- else -%}
+            {{ jeremy_state | default("Inconnu") }}
+          {%- endif -%}
+
+    jeremy_gps_simple:
+      friendly_name: Jérémy GPS Simple
+      value_template: >-
+        {% if states.person.jeremy.state == "home" %}
+          Maison           
+        {% elif states.person.jeremy.state == "not_home" %}
+          Absent         
+        {%- else -%}
+          {{ states.person.jeremy.state }}
+        {%- endif %}
+
+    jeremy_trajet:
+      friendly_name: Jérémy tps trajet
+      value_template: >-
+            {% set person = states.person.jeremy.state %}
+            {% if person == "home" %}
+            {% set minutes = states.sensor.jeremy_trajet_travail.state | int %}
+            {% set heures = minutes // 60 %}
+            {% set minutes_restantes = minutes % 60 %}
+            {{ heures }}h {{ minutes_restantes }}min            
+            {% else %}
+            {% set minutes = states.sensor.jeremy_trajet_domicile.state | int %}
+            {% set heures = minutes // 60 %}
+            {% set minutes_restantes = minutes % 60 %}
+            {{ heures }}h {{ minutes_restantes }}min
+            {% endif %}   
+
+    emma_gps:
+      friendly_name: Emma GPS 
+      value_template: >-      
+          {%- set emma_state = states.sensor.galaxy_s21_fe_geocoded_location.state -%}
+          
+          {%- set location = states.sensor.galaxy_s21_fe_geocoded_location.attributes -%}
+          
+          {%- if emma_state == "home" -%}
+            Maison
+          {%- elif emma_state == "not_home" and location -%}
+            {{ location.Name }} {{ state_attr('sensor.galaxy_s21_fe_geocoded_location', 'Postal Code') }} {{ location.Locality }}
+          {%- else -%}
+            {{ emma_state | default("Inconnu") }}
+          {%- endif -%}
+
+    emma_gps_simple:
+      friendly_name: Emma GPS Simple
+      value_template: >-
+        {% if states.person.emma.state == "home" %}
+          Maison           
+        {% elif states.person.emma.state == "not_home" %}
+          Absente         
+        {%- else -%}
+          {{ states.person.emma.state }}
+        {%- endif %}
+
+    emma_trajet:
+      friendly_name: Emma tps trajet
+      value_template: >-
+            {% set person = states.person.emma.state %}
+            {% if person == "not_home" %}
+            {% set minutes = states.sensor.emma_trajet_domicile.state | int %}
+            {% set heures = minutes // 60 %}
+            {% set minutes_restantes = minutes % 60 %}  
+            {{ heures }}h {{ minutes_restantes }}min
+            {% else %}  
+              Aucun        
+            {% endif %}
+
+    ########################################
+    # ETAT ALARMES HA COMPANION
+    ########################################
+    # Etats alarmes
+    pixel_6_jh_alarm_state:
+      friendly_name: "Pixel 6 JH Prochaine alarme"
+      value_template: >-
+        {{now().strftime("%a %h %d %H:%M %Z %Y") ==
+        (((state_attr('sensor.pixel_6_jh_next_alarm', 'Time in Milliseconds') |
+        int / 1000)) | timestamp_custom('%a %h %d %H:%M %Z %Y'))}}
+
+    galaxy_s21_fe_alarm_state:
+      friendly_name: "Galaxy S21 FE Prochaine alarme"
+      value_template: >-
+        {{now().strftime("%a %h %d %H:%M %Z %Y") ==
+        (((state_attr('sensor.galaxy_s21_fe_next_alarm', 'Time in Milliseconds') |
+        int / 1000)) | timestamp_custom('%a %h %d %H:%M %Z %Y'))}}
+
+    # Délai extinction écran
+    pixel_6_jh_delay_screen_off:
+      friendly_name: "Pixel 6 JH délai d'extinction écran"
+      value_template: "{{ (states.sensor.pixel_6_jh_screen_off_timeout.state|float/60000) }}"
+      unit_of_measurement: "min"
+
+    # Luminosité automatique
+    pixel_6_jh_auto_brightness:
+      friendly_name: "Pixel 6 JH luminosité automatique"
+      value_template: >-
+        {% if states.input_boolean.pixel_6_jh_luminosite_automatique.state == "on" %}
+          Auto
+        {%- else -%}
+          Manuel
+        {%- endif %}

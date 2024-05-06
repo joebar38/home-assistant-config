@@ -1,0 +1,142 @@
+################################################################################
+# TENDANCES
+################################################################################
+- platform: trend
+  sensors:
+    trend_temp_appartement:
+      entity_id: sensor.temp_appartement
+      friendly_name: temp séjour tendance
+      sample_duration: 1800
+
+- platform: trend
+  sensors:
+    trend_temp_sejour_cuisine:
+      entity_id: sensor.temp_sejour_cuisine
+      friendly_name: temp séjour cuisine tendance
+      sample_duration: 1800
+
+- platform: trend
+  sensors:
+    trend_temp_sejour:
+      entity_id: sensor.netatmo_temperature_courante
+      friendly_name: temp séjour tendance
+      sample_duration: 1800
+
+- platform: trend
+  sensors:
+    trend_temp_cuisine:
+      entity_id: sensor.moniteur_qualite_air_temperature
+      friendly_name: temp cuisine tendance
+      sample_duration: 1800
+
+- platform: trend
+  sensors:
+    trend_temp_sdb:
+      entity_id: sensor.thermo_sdb_temperature
+      friendly_name: temp SDB tendance
+      sample_duration: 1800
+
+- platform: trend
+  sensors:
+    trend_temp_chambre:
+      entity_id: sensor.thermo_chambre_temperature
+      friendly_name: temp chambre tendance
+      sample_duration: 1800
+
+- platform: trend
+  sensors:
+    trend_temp_petite_chambre:
+      entity_id: sensor.thermo_petite_chambre_temperature
+      friendly_name: temp petite chambre tendance
+      sample_duration: 1800
+
+- platform: trend
+  sensors:
+    trend_air:
+      entity_id: sensor.moniteur_qualite_air_voc
+      friendly_name: air tendance
+      sample_duration: 1800
+
+- platform: trend
+  sensors:
+    trend_pm2_5:
+      entity_id: sensor.sensor_14770_pm2_5
+      friendly_name: pm2.5 tendance
+      sample_duration: 1800
+
+- platform: trend
+  sensors:
+    trend_pm10:
+      entity_id: sensor.sensor_14770_pm10
+      friendly_name: pm10 tendance
+      sample_duration: 1800
+
+- platform: trend
+  sensors:
+    trend_cpu_temp:
+      entity_id: sensor.processor_temperature
+      friendly_name: cpu temp tendance
+      sample_duration: 1800
+
+- platform: trend
+  sensors:
+    trend_processor_use:
+      entity_id: sensor.processor_use
+      friendly_name: processor use tendance
+      sample_duration: 1800
+
+- platform: trend
+  sensors:
+    trend_memory_use:
+      entity_id: sensor.memory_use_percent
+      friendly_name: memory use tendance
+      sample_duration: 1800
+
+- platform: trend
+  sensors:
+    trend_ssd_use:
+      entity_id: sensor.disk_use_percent
+      friendly_name: ssd use tendance
+      sample_duration: 1800
+
+- platform: trend
+  sensors:
+    trend_freebox_cpu_temp:
+      entity_id: sensor.freebox_temp_moyenne
+      friendly_name: freebox cpu temp tendance
+      sample_duration: 1800
+
+- platform: trend
+  sensors:
+    trend_freebox_ssd_use:
+      entity_id: sensor.ssd_240go_disk_use_percent
+      friendly_name: freebox ssd use tendance
+      sample_duration: 1800
+
+- platform: trend
+  sensors:
+    trend_parsecpi_cpu_temp:
+      entity_id: sensor.parsecpi_sensors_parsecpi_temperature
+      friendly_name: parsecpi cpu temp tendance
+      sample_duration: 1800
+
+- platform: trend
+  sensors:
+    trend_parsecpi_processor_use:
+      entity_id: sensor.parsecpi_sensors_parsecpi_cpu_usage
+      friendly_name: parsecpi processor use tendance
+      sample_duration: 1800
+
+- platform: trend
+  sensors:
+    trend_parsecpi_memory_use:
+      entity_id: sensor.parsecpi_sensors_parsecpi_memory_use
+      friendly_name: parsecpi memory use tendance
+      sample_duration: 1800
+
+- platform: trend
+  sensors:
+    trend_parsecpi_sd_use:
+      entity_id: sensor.parsecpi_sensors_parsecpi_disk_use
+      friendly_name: parsecpi sd use tendance
+      sample_duration: 1800

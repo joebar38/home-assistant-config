@@ -1,0 +1,3025 @@
+decluttering_templates:
+  header:
+    card:
+      type: horizontal-stack
+      cards:
+        - type: custom:button-card
+          template:
+            - badge_card
+            - no_style
+          label: '[[name]]'
+          icon: '[[icon]]'
+          styles:
+            label:
+              - font-size: 14.5px
+              - font-weight: 600
+              - color: var(--title)
+            icon:
+              - width: 20px
+              - color: var(--title)
+              - filter: drop-shadow(0px 2px 2px rgba(0,0,0,0.5))
+            img_cell:
+              - background-color: none
+            card:
+              - margin: 0px 10px 0px 5px
+        - type: custom:button-card
+          template:
+            - badge_auto_card
+            - no_style
+          show_label: false
+          icon: mdi:close
+          styles:
+            icon:
+              - width: 12px
+              - color: var(--ocean-blue)
+            card:
+              - margin-top: 0px
+              - opacity: 100%
+          tap_action:
+            action: navigate
+            navigation_path: /
+  haut_heure:
+    card:
+      type: custom:button-card
+      label: >
+        [[[return states['sensor.date_jour'].state + "
+        "+states['sensor.date_numero'].state + " " +
+        states['sensor.date_mois_court'].state + ", " +
+        states['sensor.time'].state ]]] 
+      template:
+        - police
+        - no_style
+        - badge_auto_card
+      styles:
+        label:
+          - font-size: 20px
+  haut_meteo:
+    card:
+      type: custom:button-card
+      entity: weather.TA_VILLE
+      label: |
+        [[[return states['sensor.weather_temperature'].state + "° "]]]
+      template:
+        - police
+        - no_style
+        - badge
+        - weather_icon
+      show_entity_picture: true
+      styles:
+        img_cell:
+          - overflow: visible
+          - margin-right: 10px
+          - width: 55px
+        label:
+          - font-size: 20px
+  haut_alarme:
+    card:
+      type: custom:button-card
+      entity: alarm_control_panel.alarmo
+      show_label: false
+      template:
+        - mini_card
+        - security_mini_card_state
+      icon: |
+        [[[
+          var entity = states['alarm_control_panel.alarmo'].state;
+          if (entity == "disarmed" )
+            return "mdi:shield-off";
+          if (entity == "armed_away" )
+            return "mdi:shield-lock";
+          if (entity  == "armed_home" )
+            return "mdi:shield-home";
+          if (entity  == "armed_night" )
+            return "mdi:shield-moon";
+          if (entity  == "arming" )
+            return "mdi:shield-half-full";
+          if (entity  == "triggered" )
+            return "mdi:shield-alert";
+          return "mdi:shield-off";
+        ]]]
+  bloc_1_meteo:
+    card:
+      type: custom:button-card
+      template:
+        - police
+        - around_card
+        - around_clear_card
+      custom_fields:
+        info:
+          card:
+            type: custom:clock-weather-card
+            entity: weather.TA_VILLE
+            title: ''
+            sun_entity: sun.sun
+            weather_icon_type: fill
+            animated_icon: true
+            forecast_days: 7
+            locale: fr
+            time_format: 24
+            date_pattern: d MMMM y
+            hide_today_section: true
+            hide_forecast_section: false
+            card_mod:
+              style: |
+                ha-card {
+                  font-size: 12px;
+                  background-color: transparent;
+                  }
+  bloc_1_qualite_air:
+    card:
+      type: custom:hui-element
+      card_type: vertical-stack
+      cards:
+        - type: custom:button-card
+          entity: sensor.moniteur_qualite_air_voc
+          template:
+            - no_style
+          show_name: true
+          show_label: false
+          show_icon: false
+          name: |
+            [[[
+              return "QAI : " + states['sensor.moniteur_qualite_air_voc'].state + " ppb<br>" + states['sensor.qai_maison'].state
+            ]]]
+          styles:
+            name:
+              - font-size: 15px
+              - font-weight: 600
+              - white-space: normal
+              - color: |
+                  [[[
+                    if (states['sensor.qualite_air_pourcentage'].state >= 98.8)
+                      return 'var(--green)'
+                   if (states['sensor.qualite_air_pourcentage'].state > 96)
+                      return 'var(--yellow)'
+                   if (states['sensor.qualite_air_pourcentage'].state > 88)
+                      return 'var(--orange)'
+                   if (states['sensor.qualite_air_pourcentage'].state > 60)
+                      return 'var(--red)'
+                    return ''
+                  ]]]            
+            label:
+              - font-size: 12px
+              - white-space: normal
+            card:
+              - filter: drop-shadow(0px 2px 2px rgba(0,0,0,0.3))
+              - padding: 0px
+        - type: custom:button-card
+          entity: sensor.sensor_14770_pm2_5
+          template:
+            - no_style
+          show_name: true
+          show_label: false
+          show_icon: false
+          name: |
+            [[[
+              return "PM2.5 : " + states['sensor.sensor_14770_pm2_5'].state + " µg/m3<br>" + states['sensor.pm2_5'].state
+            ]]]
+          styles:
+            name:
+              - font-size: 15px
+              - font-weight: 600
+              - white-space: normal
+              - color: |
+                  [[[
+                    if (states['sensor.sensor_14770_pm2_5'].state <= 10  )
+                      return 'var(--green)'
+                   if (states['sensor.sensor_14770_pm2_5'].state <= 20  )
+                      return 'var(--yellow)'
+                   if (states['sensor.sensor_14770_pm2_5'].state <= 25  )
+                      return 'var(--orange)'
+                   if (states['sensor.sensor_14770_pm2_5'].state <= 50  )
+                      return 'var(--red)'
+                    return ''
+                  ]]]            
+            label:
+              - font-size: 12px
+              - white-space: normal
+            card:
+              - filter: drop-shadow(0px 2px 2px rgba(0,0,0,0.3))
+        - type: custom:button-card
+          entity: sensor.sensor_14770_pm10
+          template:
+            - no_style
+          show_name: true
+          show_label: false
+          show_icon: false
+          name: |
+            [[[
+              return "PM10 : " + states['sensor.sensor_14770_pm10'].state + " µg/m3<br>" + states['sensor.pm10'].state
+            ]]]
+          styles:
+            name:
+              - font-size: 15px
+              - font-weight: 600
+              - white-space: normal
+              - color: |
+                  [[[
+                    if (states['sensor.sensor_14770_pm10'].state <= 20  )
+                      return 'var(--green)'
+                   if (states['sensor.sensor_14770_pm10'].state <= 40  )
+                      return 'var(--yellow)'
+                   if (states['sensor.sensor_14770_pm10'].state <= 50  )
+                      return 'var(--orange)'
+                   if (states['sensor.sensor_14770_pm10'].state <= 100  )
+                      return 'var(--red)'
+                    return ''
+                  ]]]            
+            label:
+              - font-size: 12px
+              - white-space: normal
+            card:
+              - filter: drop-shadow(0px 2px 2px rgba(0,0,0,0.3))
+              - padding: 0px
+  bloc_1_temp:
+    card:
+      type: custom:hui-element
+      card_type: vertical-stack
+      cards:
+        - type: custom:button-card
+          template:
+            - label_state_temperature
+          entity: sensor.moniteur_qualite_air_temp_arrondie
+          name: Cuisine
+          label: >
+            [[[ return states['sensor.moniteur_qualite_air_temp_arrondie'].state
+            +"° " + states['sensor.moniteur_qualite_air_hum_arrondie'].state
+            +"%" ]]]
+        - type: custom:button-card
+          template:
+            - label_state_temperature
+          entity: sensor.netatmo_temperature_courante
+          name: Salon
+          label: >
+            [[[ return states['sensor.netatmo_temperature_courante'].state +"°"
+            ]]]
+          card_mod:
+            style: |
+              ha-card {
+                margin-top: -10px;
+              }
+        - type: custom:button-card
+          template:
+            - label_state_temperature
+          entity: sensor.thermo_chambre_temperature
+          name: Chambre
+          label: >
+            [[[ return states['sensor.thermo_chambre_temperature'].state +"° " +
+            states['sensor.thermo_chambre_humidity'].state +"%" ]]]
+          card_mod:
+            style: |
+              ha-card {
+                margin-top: -10px;
+              }
+        - type: custom:button-card
+          template:
+            - label_state_temperature
+          entity: sensor.thermo_petite_chambre_temperature
+          name: Petite Chambre
+          label: >
+            [[[ return states['sensor.thermo_petite_chambre_temperature'].state
+            +"° " + states['sensor.thermo_petite_chambre_humidity'].state +"%"
+            ]]]
+          card_mod:
+            style: |
+              ha-card {
+                margin-top: -10px;
+              }
+        - type: custom:button-card
+          template:
+            - label_state_temperature
+          entity: sensor.thermo_sdb_temperature
+          name: Salle de bains
+          label: >
+            [[[ return states['sensor.thermo_sdb_temperature'].state +"° " +
+            states['sensor.thermo_sdb_humidity'].state +"%" ]]]
+          card_mod:
+            style: |
+              ha-card {
+                margin-top: -10px;
+              }
+  bloc_2_apps:
+    card:
+      type: custom:swipe-card
+      card_mod:
+        style: |
+          ha-card {  
+            background-color: transparent;
+            box-shadow: none;
+            border-radius: 0px !important;
+          }
+      cards:
+        - type: custom:vertical-stack-in-card
+          layout: vertical
+          cards:
+            - type: grid
+              square: true
+              columns: 3
+              cards:
+                - type: custom:button-card
+                  template:
+                    - police
+                  show_name: false
+                  show_label: true
+                  show_entity_picture: true
+                  label: Minuteur
+                  entity: script.wallpanel_app_minuteur
+                  entity_picture: /local/floorplan/images/logo_minuteur.png
+                  styles:
+                    icon:
+                      - width: 50px
+                      - color: dodgerblue
+                    label:
+                      - font-size: 100%
+                    card:
+                      - background-color: rgba(0, 0, 0, 0.0)
+                  tap_action:
+                    action: call-service
+                    service: script.wallpanel_app_minuteur
+                - type: custom:button-card
+                  template:
+                    - police
+                  show_name: false
+                  show_label: true
+                  show_entity_picture: true
+                  label: Spotify
+                  entity: script.wallpanel_app_spotify
+                  entity_picture: /local/floorplan/images/logo_spotify.png
+                  styles:
+                    icon:
+                      - width: 50px
+                      - color: olivedrab
+                    label:
+                      - font-size: 100%
+                    card:
+                      - background-color: rgba(0, 0, 0, 0.0)
+                  tap_action:
+                    action: call-service
+                    service: script.wallpanel_app_spotify
+                - type: custom:button-card
+                  template:
+                    - police
+                  show_name: false
+                  show_label: true
+                  show_entity_picture: true
+                  label: Netflix
+                  entity: script.wallpanel_app_netflix
+                  entity_picture: /local/floorplan/images/logo_netflix.png
+                  styles:
+                    icon:
+                      - width: 50px
+                      - color: red
+                    label:
+                      - font-size: 100%
+                    card:
+                      - background-color: rgba(0, 0, 0, 0.0)
+                  tap_action:
+                    action: call-service
+                    service: script.wallpanel_app_netflix
+                - type: custom:button-card
+                  template:
+                    - police
+                  show_name: false
+                  show_label: true
+                  show_entity_picture: true
+                  label: Amazon
+                  entity: script.wallpanel_app_prime_video
+                  entity_picture: /local/floorplan/images/logo_prime_video.png
+                  styles:
+                    icon:
+                      - width: 50px
+                      - color: royalblue
+                    label:
+                      - font-size: 100%
+                    card:
+                      - background-color: rgba(0, 0, 0, 0.0)
+                  tap_action:
+                    action: call-service
+                    service: script.wallpanel_app_prime_video
+                - type: custom:button-card
+                  template:
+                    - police
+                  show_name: false
+                  show_label: true
+                  show_entity_picture: true
+                  label: MyCanal
+                  entity: script.wallpanel_app_mycanal
+                  entity_picture: /local/floorplan/images/logo_mycanal.png
+                  styles:
+                    icon:
+                      - width: 50px
+                      - color: black
+                    label:
+                      - font-size: 100%
+                    card:
+                      - background-color: rgba(0, 0, 0, 0.0)
+                  tap_action:
+                    action: call-service
+                    service: script.wallpanel_app_mycanal
+                - type: custom:button-card
+                  template:
+                    - police
+                  show_name: false
+                  show_label: true
+                  show_entity_picture: true
+                  label: Disney +
+                  entity: script.wallpanel_app_disney_plus
+                  entity_picture: /local/floorplan/images/logo_disney_plus.png
+                  styles:
+                    icon:
+                      - width: 50px
+                      - color: navy
+                    label:
+                      - font-size: 100%
+                    card:
+                      - background-color: rgba(0, 0, 0, 0.0)
+                  tap_action:
+                    action: call-service
+                    service: script.wallpanel_app_disney_plus
+          card_mod:
+            style: |
+              ha-card {  
+                background-color: transparent;
+                box-shadow: none;
+                border-radius: 0px !important;
+              } 
+        - type: custom:vertical-stack-in-card
+          layout: vertical
+          cards:
+            - type: grid
+              square: true
+              columns: 3
+              cards:
+                - type: custom:button-card
+                  template:
+                    - police
+                  show_name: false
+                  show_label: true
+                  show_entity_picture: true
+                  label: YouTube
+                  entity: script.wallpanel_app_youtube
+                  entity_picture: /local/floorplan/images/logo_youtube.png
+                  styles:
+                    icon:
+                      - width: 50px
+                      - color: red
+                    label:
+                      - font-size: 100%
+                    card:
+                      - background-color: rgba(0, 0, 0, 0.0)
+                  tap_action:
+                    action: call-service
+                    service: script.wallpanel_app_youtube
+                - type: custom:button-card
+                  template:
+                    - police
+                  show_name: false
+                  show_label: true
+                  show_entity_picture: true
+                  label: Deliveroo
+                  entity: script.wallpanel_app_deliveroo
+                  entity_picture: /local/floorplan/images/logo_deliveroo.png
+                  styles:
+                    icon:
+                      - width: 50px
+                      - color: mediumturquoise
+                    label:
+                      - font-size: 100%
+                    card:
+                      - background-color: rgba(0, 0, 0, 0.0)
+                  tap_action:
+                    action: call-service
+                    service: script.wallpanel_app_deliveroo
+                - type: custom:button-card
+                  template:
+                    - police
+                  show_name: false
+                  show_label: true
+                  show_entity_picture: true
+                  label: Netatmo
+                  entity: script.wallpanel_app_netatmo
+                  entity_picture: /local/floorplan/images/logo_netatmo.png
+                  icon: mdi:thermostat
+                  styles:
+                    icon:
+                      - width: 50px
+                      - color: darkorange
+                    label:
+                      - font-size: 100%
+                    card:
+                      - background-color: rgba(0, 0, 0, 0.0)
+                  tap_action:
+                    action: call-service
+                    service: script.wallpanel_app_netatmo
+                - type: custom:button-card
+                  template:
+                    - police
+                  show_name: false
+                  show_label: true
+                  show_entity_picture: true
+                  label: Tasker
+                  entity: script.wallpanel_app_tasker
+                  entity_picture: /local/floorplan/images/logo_tasker.png
+                  styles:
+                    icon:
+                      - width: 50px
+                      - color: orange
+                    label:
+                      - font-size: 100%
+                    card:
+                      - background-color: rgba(0, 0, 0, 0.0)
+                  tap_action:
+                    action: call-service
+                    service: script.wallpanel_app_tasker
+                - type: custom:button-card
+                  template:
+                    - police
+                  show_name: false
+                  show_label: true
+                  show_entity_picture: true
+                  label: Play Store
+                  entity: script.wallpanel_app_play_store
+                  entity_picture: /local/floorplan/images/logo_play_store.png
+                  styles:
+                    icon:
+                      - width: 50px
+                      - color: orange
+                    label:
+                      - font-size: 100%
+                    card:
+                      - background-color: rgba(0, 0, 0, 0.0)
+                  tap_action:
+                    action: call-service
+                    service: script.wallpanel_app_play_store
+          card_mod:
+            style: |
+              ha-card {  
+                background-color: transparent;
+                box-shadow: none;
+                border-radius: 0px !important;
+              }
+  bloc_2_media:
+    card:
+      type: custom:mini-media-player
+      entity: media_player.spotify_TON_COMPTE
+      volume_stateless: true
+      hide:
+        power: true
+      source: icon
+      artwork: material
+      card_mod:
+        style: |
+          ha-card {
+            font-family: Avenir;
+            height: 150px !important;
+          }
+          .entity__info__name {
+            font-size: 14px;
+          }
+          .entity__info__media {
+            font-size: 12px;
+          }
+  bloc_3_thermostat_netatmo:
+    card:
+      type: picture-elements
+      image: /local/images/netatmo/netatmo_background_dark_V2_409x762.png
+      elements:
+        - type: image
+          entity: climate.ma_piece
+          title: Augmenter la consigne
+          tap_action:
+            action: call-service
+            service: Script.netatmo_increment_consigne
+          hold_action:
+            action: more-info
+          image: /local/images/netatmo/netatmo_up_dark.png
+          style:
+            top: 52%
+            left: 77%
+            width: 6%
+        - type: image
+          entity: climate.ma_piece
+          title: Baisser la consigne
+          tap_action:
+            action: call-service
+            service: Script.netatmo_decrement_consigne
+          hold_action:
+            action: more-info
+          image: /local/images/netatmo/netatmo_down_dark.png
+          style:
+            top: 52%
+            left: 56.5%
+            width: 6%
+        - type: image
+          entity: sensor.netatmo_hvac_action
+          title: Témoin de chauffe
+          image: /local/images/netatmo/netatmo_chauffe.png
+          style:
+            top: 58%
+            left: 25.5%
+            width: 7%
+          state_filter:
+            heating: brightness(100%) saturate(1)
+            idle: opacity(0%)
+        - type: image
+          entity: sensor.netatmo_preset_mode
+          title: Mode de fonctionnement
+          style:
+            top: 29.9%
+            left: 39%
+            width: 11%
+          state_image:
+            Manuel: /local/images/netatmo/netatmo_manual_dark.png
+            Planning: /local/images/netatmo/automatique_dark.png
+            Absent: /local/images/netatmo/absent_dark.png
+            Hors-Gel: /local/images/netatmo/hors_gel_dark.png
+            Éteint: /local/floorplan/images/nixx.png
+        - type: state-label
+          entity: sensor.netatmo_temperature_courante
+          title: Température Actuelle
+          style:
+            top: 48%
+            left: 25.5%
+            font-size: 1.4em
+            color: white
+            font-weight: 600
+        - type: conditional
+          conditions:
+            - entity: sensor.netatmo_temperature_consigne
+              state_not: '0'
+          elements:
+            - type: state-label
+              entity: sensor.netatmo_temperature_consigne
+              title: Température Actuelle
+              style:
+                top: 24.7%
+                left: 24.8%
+                color: white
+                font-weight: 600
+        - type: conditional
+          conditions:
+            - entity: sensor.netatmo_temperature_consigne
+              state: '0'
+          elements:
+            - action: none
+              entity: climate.ma_piece
+              hold_action:
+                action: none
+              image: /local/images/netatmo/off_dark.png
+              style:
+                left: 25%
+                top: 25.5%
+                width: 15%
+              tap_action:
+                action: none
+              type: image
+        - type: custom:button-card
+          entity: climate.ma_piece
+          name: Netatmo
+          show_state: false
+          show_label: false
+          show_icon: false
+          template:
+            - title_card
+          styles:
+            name:
+              - font-size: 16px
+              - font-weight: 600
+              - color: orange
+              - padding-top: 0%
+              - margin-left: 0%
+          style:
+            top: 25%
+            left: 66%
+        - type: state-label
+          entity: sensor.thermostat_battery_percent
+          title: '% Batterie'
+          style:
+            top: 79%
+            left: 8.3%
+            font-size: 0.7em
+            color: white
+            font-weight: 600
+        - type: state-icon
+          entity: sensor.thermostat_battery_percent
+          title: Niveau batterie
+          icon: mdi:battery-high
+          tap_action:
+            action: more-info
+          style:
+            top: 86%
+            left: 8%
+            '--paper-item-icon-color': white
+        - type: image
+          entity: climate.ma_piece
+          image: /local/images/netatmo/bouton_fond_300x98_dark.png
+          style:
+            top: 83.2%
+            left: 71%
+            width: 58%
+        - type: image
+          entity: script.netatmo_mode_absent
+          title: Passer en Mode Absent
+          image: /local/images/netatmo/absent_dark.png
+          style:
+            top: 83%
+            left: 53%
+            width: 12%
+        - type: image
+          entity: script.netatmo_mode_hors_gel
+          title: Mode hors-gel
+          image: /local/images/netatmo/hors_gel_dark.png
+          style:
+            top: 83.2%
+            left: 79.5%
+            width: 14.5%
+        - type: image
+          entity: script.netatmo_mode_schedule
+          title: Passer en Mode Automatique
+          tap_action:
+            action: call-service
+            service: Script.netatmo_mode_schedule
+          image: /local/images/netatmo/automatique_dark.png
+          style:
+            top: 83.2%
+            left: 67%
+            width: 10%
+        - type: state-label
+          entity: select.appartement
+          title: Planning
+          icon: mdi:calendar
+          style:
+            top: 85%
+            left: 27%
+            color: white
+            font-size: 0.7em
+        - type: image
+          title: Modification plannings
+          image: /local/images/netatmo/calendrier_dark.png
+          tap_action:
+            action: url
+            url_path: https://my.netatmo.com/app/therm
+          style:
+            top: 92%
+            left: 40%
+            width: 7%
+        - type: image
+          entity: climate.ma_piece
+          title: On / Off
+          style:
+            top: 10%
+            left: 8%
+            width: 07%
+          state_image:
+            'off': /local/images/netatmo/netatmo_off.png
+            auto: /local/images/netatmo/netatmo_on.png
+          tap_action:
+            action: call-service
+            service: Script.netatmo_on_off
+  bloc_3_thermostat_mitsubishi:
+    card:
+      type: picture-elements
+      image: /local/images/mitsubishi/fond.png
+      elements:
+        - action: none
+          entity: sun.sun
+          hold_action:
+            action: none
+          state_image:
+            above_horizon: /local/images/mitsubishi/transparent_100100.png
+            below_horizon: /local/images/mitsubishi/fond_dark_v2.png
+          style:
+            left: 50%
+            top: 50%
+            width: 100%
+          tap_action:
+            action: none
+          type: image
+        - type: custom:button-card
+          entity: '[[climate]]'
+          name: '[[name_clim]]'
+          show_state: false
+          show_label: false
+          show_icon: false
+          template:
+            - title_card
+          styles:
+            name:
+              - font-size: 10px
+              - font-weight: 600
+              - color: black
+              - padding-top: 0%
+              - margin-left: 0%
+          style:
+            top: 20%
+            left: 48%
+        - type: custom:config-template-card
+          entities:
+            - input_select.clim_thermostat_details
+          style:
+            left: 12%
+            top: 23%
+            width: 76%
+            transform: scale(1,2.3)
+          element:
+            action: none
+            entity: input_select.clim_thermostat_details
+            image: /local/images/mitsubishi/transparent_100100.png
+            hold_action:
+              action: none
+            state_image:
+              Horizontal: /local/images/mitsubishi/fond_popup.png
+              Vertical: /local/images/mitsubishi/fond_popup.png
+            tap_action:
+              action: none
+            type: image
+        - type: image
+          entity: '[[climate]]'
+          title: Changer le mode
+          tap_action:
+            action: call-service
+            service: input_select.select_next
+            data:
+              cycle: true
+            target:
+              entity_id: '[[input_select_modes]]'
+          hold_action:
+            action: more-info
+          image: /local/images/mitsubishi/transparent_100100.png
+          style:
+            top: 63%
+            left: 20.5%
+            width: 3%
+            transform: scale(6,2)
+        - type: image
+          entity: '[[climate]]'
+          title: Baisser la température de 0,5°C
+          tap_action:
+            action: call-service
+            service: '[[script_decrement_consigne]]'
+          hold_action:
+            action: more-info
+          image: /local/images/mitsubishi/transparent_100100.png
+          style:
+            top: 63%
+            left: 39%
+            width: 3%
+            transform: scale(6,2)
+        - type: image
+          entity: '[[climate]]'
+          title: Augmenter la température de 0,5°C
+          tap_action:
+            action: call-service
+            service: '[[script_increment_consigne]]'
+          hold_action:
+            action: more-info
+          image: /local/images/mitsubishi/transparent_100100.png
+          style:
+            top: 63%
+            left: 57%
+            width: 3%
+            transform: scale(6,2)
+        - type: image
+          entity: '[[climate]]'
+          title: Changer le mode de ventilation
+          tap_action:
+            action: call-service
+            service: input_select.select_next
+            target:
+              entity_id: '[[input_select_fan_modes]]'
+            data:
+              cycle: true
+          hold_action:
+            action: more-info
+          image: /local/images/mitsubishi/transparent_100100.png
+          style:
+            top: 63%
+            left: 76%
+            width: 3%
+            transform: scale(6,2)
+        - type: image
+          entity: '[[climate]]'
+          title: Informations
+          tap_action:
+            action: more-info
+          hold_action:
+            action: more-info
+          image: /local/images/mitsubishi/transparent_100100.png
+          style:
+            top: 85.5%
+            left: 19.5%
+            width: 3%
+            transform: scale(7,4)
+        - type: image
+          entity: '[[climate]]'
+          title: ON/OFF
+          tap_action:
+            action: call-service
+            service: '[[script_on_off]]'
+          hold_action:
+            action: none
+          image: /local/images/mitsubishi/transparent_100100.png
+          style:
+            top: 87%
+            left: 87%
+            width: 3%
+            transform: scale(7,7)
+        - type: conditional
+          conditions:
+            - entity: '[[clim_etat]]'
+              state_not: Éteint
+            - entity: input_select.clim_thermostat_details
+              state_not: Horizontal
+            - entity: input_select.clim_thermostat_details
+              state_not: Vertical
+          elements:
+            - type: state-label
+              entity: '[[clim_etat]]'
+              title: Mode
+              style:
+                top: 35%
+                left: 21.5%
+                color: black
+                font-size: 10px
+                font-weight: 600
+            - type: image
+              entity: '[[clim_etat]]'
+              title: Mode de fonctionnement
+              style:
+                top: 43%
+                left: 21.5%
+                width: 8%
+              state_image:
+                Chauffage: /local/images/mitsubishi/mode_chaud.png?v=2
+                Déshum: /local/images/mitsubishi/mode_deshum.png?v=2
+                Clim: /local/images/mitsubishi/mode_froid.png?v=2
+                Ventil: /local/images/mitsubishi/mode_ventil.png?v=2
+                Auto: /local/images/mitsubishi/mode_auto.png?v=2
+                Éteint: /local/images/mitsubishi/transparent_100100.png
+            - type: conditional
+              conditions:
+                - entity: '[[clim_etat]]'
+                  state_not: Ventil
+              elements:
+                - type: state-label
+                  entity: '[[clim_temp_consigne]]'
+                  title: Température Consigne
+                  style:
+                    top: 43%
+                    left: 53%
+                    color: black
+                    font-size: 20px
+                    font-weight: 600
+            - type: image
+              entity: '[[clim_fan_modes]]'
+              title: Mode de ventilation
+              style:
+                top: 43%
+                left: 78%
+                width: 12%
+              state_image:
+                '1': /local/images/mitsubishi/fan_1.png?v=2
+                '2': /local/images/mitsubishi/fan_2.png?v=2
+                '3': /local/images/mitsubishi/fan_3.png?v=2
+                '4': /local/images/mitsubishi/fan_4.png?v=2
+                auto: /local/images/mitsubishi/fan_auto.png?v=2
+            - type: image
+              entity: '[[clim_position_verticale]]'
+              title: Position verticale
+              tap_action:
+                action: call-service
+                service: input_select.select_option
+                data:
+                  option: Vertical
+                target:
+                  entity_id: input_select.clim_thermostat_details
+              style:
+                top: 20%
+                left: 73%
+                width: 8%
+              state_image:
+                '1': /local/images/mitsubishi/swing_vertical_1.png?v=2
+                '2': /local/images/mitsubishi/swing_vertical_2.png?v=2
+                '3': /local/images/mitsubishi/swing_vertical_3.png?v=2
+                '4': /local/images/mitsubishi/swing_vertical_4.png?v=2
+                '5': /local/images/mitsubishi/swing_vertical_5.png?v=2
+                auto: /local/images/mitsubishi/swing_vertical_auto.png?v=2
+                swing: /local/images/mitsubishi/swing_vertical_balayage.png?v=2
+            - type: image
+              entity: '[[clim_position_horizontale]]'
+              title: Position horizontale
+              tap_action:
+                action: call-service
+                service: input_select.select_option
+                data:
+                  option: Horizontal
+                target:
+                  entity_id: input_select.clim_thermostat_details
+              style:
+                top: 20%
+                left: 83%
+                width: 8%
+              state_image:
+                '1': /local/images/mitsubishi/swing_horizontal_1.png?v=2
+                '2': /local/images/mitsubishi/swing_horizontal_2.png?v=2
+                '3': /local/images/mitsubishi/swing_horizontal_3.png?v=2
+                '4': /local/images/mitsubishi/swing_horizontal_4.png?v=2
+                '5': /local/images/mitsubishi/swing_horizontal_5.png?v=2
+                swing: /local/images/mitsubishi/swing_horizontal_balayage.png?v=2
+        - type: conditional
+          conditions:
+            - entity: input_select.clim_thermostat_details
+              state: Horizontal
+          elements:
+            - type: image
+              entity: '[[clim_position_horizontale]]'
+              tap_action:
+                action: call-service
+                service: melcloud.set_vane_horizontal
+                target:
+                  entity_id: '[[climate]]'
+                data:
+                  position: '1'
+              image: /local/images/mitsubishi/swing_horizontal_1.png?v=2
+              style:
+                top: 25%
+                left: 20%
+                width: 10%
+            - type: image
+              entity: '[[clim_position_horizontale]]'
+              tap_action:
+                action: call-service
+                service: melcloud.set_vane_horizontal
+                target:
+                  entity_id: '[[climate]]'
+                data:
+                  position: '2'
+              image: /local/images/mitsubishi/swing_horizontal_2.png?v=2
+              style:
+                top: 25%
+                left: 35%
+                width: 10%
+            - type: image
+              entity: '[[clim_position_horizontale]]'
+              tap_action:
+                action: call-service
+                service: melcloud.set_vane_horizontal
+                target:
+                  entity_id: '[[climate]]'
+                data:
+                  position: '3'
+              image: /local/images/mitsubishi/swing_horizontal_3.png?v=2
+              style:
+                top: 25%
+                left: 50%
+                width: 10%
+            - type: image
+              entity: '[[clim_position_horizontale]]'
+              tap_action:
+                action: call-service
+                service: melcloud.set_vane_horizontal
+                target:
+                  entity_id: '[[climate]]'
+                data:
+                  position: '4'
+              image: /local/images/mitsubishi/swing_horizontal_4.png?v=2
+              style:
+                top: 25%
+                left: 65%
+                width: 10%
+            - type: image
+              entity: '[[clim_position_horizontale]]'
+              tap_action:
+                action: call-service
+                service: melcloud.set_vane_horizontal
+                target:
+                  entity_id: '[[climate]]'
+                data:
+                  position: '5'
+              image: /local/images/mitsubishi/swing_horizontal_5.png?v=2
+              style:
+                top: 25%
+                left: 80%
+                width: 10%
+            - type: image
+              entity: '[[clim_position_horizontale]]'
+              tap_action:
+                action: call-service
+                service: melcloud.set_vane_horizontal
+                target:
+                  entity_id: '[[climate]]'
+                data:
+                  position: swing
+              image: /local/images/mitsubishi/swing_horizontal_balayage.png?v=2
+              style:
+                top: 40%
+                left: 50%
+                width: 10%
+            - type: image
+              entity: '[[clim_position_horizontale]]'
+              tap_action:
+                action: call-service
+                service: input_select.select_option
+                data:
+                  option: Fermé
+                target:
+                  entity_id: input_select.clim_thermostat_details
+              image: /local/images/mitsubishi/close.png
+              style:
+                top: 15%
+                left: 80%
+                width: 4%
+        - type: conditional
+          conditions:
+            - entity: input_select.clim_thermostat_details
+              state: Vertical
+          elements:
+            - type: image
+              entity: '[[clim_position_verticale]]'
+              tap_action:
+                action: call-service
+                service: melcloud.set_vane_vertical
+                target:
+                  entity_id: '[[climate]]'
+                data:
+                  position: '1'
+              image: /local/images/mitsubishi/swing_vertical_1.png?v=2
+              style:
+                top: 25%
+                left: 20%
+                width: 10%
+            - type: image
+              entity: '[[clim_position_verticale]]'
+              tap_action:
+                action: call-service
+                service: melcloud.set_vane_vertical
+                target:
+                  entity_id: '[[climate]]'
+                data:
+                  position: '2'
+              image: /local/images/mitsubishi/swing_vertical_2.png?v=2
+              style:
+                top: 25%
+                left: 35%
+                width: 10%
+            - type: image
+              entity: '[[clim_position_verticale]]'
+              tap_action:
+                action: call-service
+                service: melcloud.set_vane_vertical
+                target:
+                  entity_id: '[[climate]]'
+                data:
+                  position: '3'
+              image: /local/images/mitsubishi/swing_vertical_3.png?v=2
+              style:
+                top: 25%
+                left: 50%
+                width: 10%
+            - type: image
+              entity: '[[clim_position_verticale]]'
+              tap_action:
+                action: call-service
+                service: melcloud.set_vane_vertical
+                target:
+                  entity_id: '[[climate]]'
+                data:
+                  position: '4'
+              image: /local/images/mitsubishi/swing_vertical_4.png?v=2
+              style:
+                top: 25.4%
+                left: 65%
+                width: 9%
+            - type: image
+              entity: '[[clim_position_verticale]]'
+              tap_action:
+                action: call-service
+                service: melcloud.set_vane_vertical
+                target:
+                  entity_id: '[[climate]]'
+                data:
+                  position: '5'
+              image: /local/images/mitsubishi/swing_vertical_5.png?v=2
+              style:
+                top: 25.4%
+                left: 80%
+                width: 7.2%
+            - type: image
+              entity: '[[clim_position_verticale]]'
+              tap_action:
+                action: call-service
+                service: melcloud.set_vane_vertical
+                target:
+                  entity_id: '[[climate]]'
+                data:
+                  position: swing
+              image: /local/images/mitsubishi/swing_vertical_balayage.png?v=2
+              style:
+                top: 40%
+                left: 20%
+                width: 10%
+            - type: image
+              entity: '[[clim_position_verticale]]'
+              tap_action:
+                action: call-service
+                service: melcloud.set_vane_vertical
+                target:
+                  entity_id: '[[climate]]'
+                data:
+                  position: auto
+              image: /local/images/mitsubishi/swing_vertical_auto.png?v=2
+              style:
+                top: 40%
+                left: 35%
+                width: 10%
+            - type: image
+              entity: '[[clim_position_verticale]]'
+              tap_action:
+                action: call-service
+                service: input_select.select_option
+                data:
+                  option: Fermé
+                target:
+                  entity_id: input_select.clim_thermostat_details
+              image: /local/images/mitsubishi/close.png
+              style:
+                top: 15%
+                left: 80%
+                width: 4%
+  bloc_3_energie:
+    card:
+      type: custom:content-card-linky
+      entity: sensor.linky_TON_PDL_consumption
+      showDayHCHP: false
+      showDayPriceHCHP: false
+      showTempo: false
+      showIcon: false
+      showTitle: false
+      showInTableUnit: false
+      showHistory: false
+      showYearRatio: false
+      showMonthRatio: true
+      showError: true
+      showEcoWatt: false
+      showHeader: true
+      showTitreLigne: false
+      showWeekRatio: true
+      showCurrentMonthRatio: true
+      showDayMaxPower: true
+      showPrice: true
+      showDayPrice: true
+      showPeakOffPeak: false
+      style:
+        left: 62.5%
+        top: 83%
+        width: 25%
+      card_mod:
+        style: |
+          ha-card {
+            background-color: transparent;
+            overflow: hide;
+          }
+  bloc_4_agenda:
+    card:
+      type: custom:swipe-card
+      card_mod:
+        style: |
+          ha-card {  
+            background-color: transparent;
+            box-shadow: none;
+            border-radius: 0px !important;
+          } 
+      cards:
+        - type: custom:atomic-calendar-revive
+          showProgressBar: false
+          refreshInterval: 600
+          showCurrentEventLine: false
+          showEventIcon: true
+          dateSize: 50
+          showLoader: false
+          maxEventCount: 20
+          eventCalNameSize: 50
+          timeSize: 65
+          eventTitleSize: 60
+          descSize: 100
+          showLocation: false
+          entities:
+            - entity: calendar.jeremy
+              icon: mdi:human-male
+              color: '#9a95ff'
+            - entity: calendar.emma
+              icon: mdi:human-female
+              color: '#ffc5f5'
+          card_mod:
+            style: |
+              .event-left current-day{
+                font-size: 10px;
+              }
+              .event-right-top {
+                font-size: 10px;
+              }
+              .event-right-bottom {
+                font-size: 10px;
+              }
+              ha-card {
+                background-color: transparent;
+                overflow: hide;
+                max-height: 200px;
+                max-width: 250px;
+              }
+        - type: vertical-stack
+          cards:
+            - type: custom:button-card
+              template:
+                - sensor_activity_card
+              entity: sensor.vacances_scolaires
+              name: Vacances
+              label: >
+                [[[ return 
+                states['sensor.calendrier_vacances_scolaires_detaillees'].state
+                ]]]
+              icon: mdi:beach
+            - type: custom:button-card
+              template:
+                - sensor_activity_card
+              entity: sensor.vacances_scolaires
+              name: Début
+              label: |
+                [[[   
+                  var startDate = states['sensor.vacances_scolaires'].attributes.start_date;
+                  
+                  return startDate
+                    ? new Date(startDate).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+                    : 'Aucune date disponible';
+                ]]]
+              icon: mdi:calendar-star-outline
+            - type: custom:button-card
+              template:
+                - sensor_activity_card
+              entity: sensor.vacances_scolaires
+              name: Reprise
+              label: |
+                [[[   
+                  var startDate = states['sensor.vacances_scolaires'].attributes.end_date;
+                  
+                  return startDate
+                    ? new Date(startDate).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+                    : 'Aucune date disponible';
+                ]]]
+              icon: mdi:school-outline
+            - type: custom:button-card
+              template:
+                - sensor_activity_card
+              entity: sensor.vacances_scolaires
+              name: Durée
+              label: >
+                [[[ return 
+                states['sensor.calendrier_vacances_scolaires_duree_en_jours'].state
+                ]]]
+              icon: mdi:timer-outline
+  bloc_4_modes:
+    card:
+      type: custom:hui-element
+      card_type: vertical-stack
+      cards:
+        - type: custom:button-card
+          template:
+            - sensor_activity_card
+          entity: input_boolean.invites
+          name: Invités
+          label: |
+            [[[ 
+              var state = states['input_boolean.invites'].state;
+              if (state == 'off' )
+                return "Désactivé";
+              return "Activé";
+            ]]]
+          tap_action:
+            action: toggle
+        - type: custom:button-card
+          template:
+            - sensor_activity_card
+          entity: input_boolean.invites_nuit
+          name: Invités nuit
+          label: |
+            [[[ 
+              var state = states['input_boolean.invites_nuit'].state;
+              if (state == 'off' )
+                return "Désactivé";
+              return "Activé";
+            ]]]
+          tap_action:
+            action: toggle
+        - type: custom:button-card
+          template:
+            - sensor_activity_card
+          entity: input_boolean.chauffage_mode_ete
+          name: Chauffage mode été
+          label: |
+            [[[ 
+              var state = states['input_boolean.chauffage_mode_ete'].state;
+              if (state == 'off' )
+                return "Désactivé";
+              return "Activé";
+            ]]]
+          tap_action:
+            action: toggle
+      card_mod:
+        style: |
+          ha-card {  
+            background-color: transparent;
+            box-shadow: none;
+            border-radius: 0px !important;
+          }
+button_card_templates:
+  police:
+    styles:
+      card:
+        - font-family: var(--primary-font-family)
+  badge:
+    show_name: false
+    show_label: true
+    show_icon: true
+    styles:
+      grid:
+        - grid-template-areas: '"i n l" '
+      card:
+        - width: auto
+        - padding-right: 07px
+        - padding-left: 03px
+        - border-radius: 13px
+      img_cell:
+        - background-color: transparent
+        - width: 65px
+        - height: 65px
+      entity_picture:
+        - width: 90%
+      label:
+        - font-size: 11px
+        - font-weight: bold
+        - margin-left: 1px
+  no_style:
+    styles:
+      card:
+        - '--ha-card-border-width': 0px
+        - background-color: none
+        - background: none
+        - box-shadow: none
+  badge_auto_card:
+    template:
+      - badge_card
+    styles:
+      card:
+        - width: auto
+  badge_card:
+    show_label: true
+    show_name: false
+    label: |
+      [[[
+        var unit = entity.attributes.unit_of_measurement || '';
+        return entity.state + unit;
+      ]]]    
+    styles:
+      grid:
+        - grid-template-areas: '"i gutter l"'
+        - grid-template-columns: min-content 5px min-content
+        - grid-template-rows: min-content
+      card:
+        - padding: 6px 5px
+        - line-height: 18px
+        - border-radius: 50px
+      label:
+        - color: var(--text-on)
+        - font-size: 13px
+        - font-weight: 500
+      img_cell:
+        - border-radius: 50px
+        - height: 20px
+        - width: 20px
+        - background-color: var(--img-cell-off)
+      icon:
+        - width: 18px
+        - color: var(--icon-off)
+  base:
+    show_icon: true
+    show_name: true
+    show_state: false
+    show_label: true
+    template:
+      - police
+    layout: icon_name_state2nd
+    styles:
+      grid:
+        - grid-template-rows: min-content min-content min-content
+        - grid-template-columns: 44px 1fr
+      img_cell:
+        - height: 35px
+        - width: 35px
+        - border-radius: 100px
+        - background-color: var(--img-cell-off)
+        - justify-self: start
+        - align-self: start
+      icon:
+        - width: 50%
+        - color: var(--icon-off)
+      name:
+        - font-size: 13px
+        - opacity: 1
+        - font-weight: 500
+        - color: var(--text-on)
+        - width: 100%
+        - text-align: left
+        - align-self: end
+        - filter: drop-shadow(1px 1px 1px rgba(0,0,0,0.5))
+      state:
+        - font-size: 13px
+        - font-weight: 500
+        - color: var(--text-on)
+        - opacity: 0.8
+        - width: 100%
+        - text-align: left
+        - align-self: start
+        - filter: drop-shadow(1px 1px 1px rgba(0,0,0,0.5))
+      label:
+        - font-size: 13px
+        - font-weight: 500
+        - color: var(--text-on)
+        - opacity: 0.8
+        - width: 100%
+        - text-align: left
+        - align-self: start
+        - filter: drop-shadow(1px 1px 1px rgba(0,0,0,0.5))
+      card:
+        - padding: 8px 10px 6px 8px
+        - font-size: 100%
+        - white-space: normal
+      custom_fields:
+        bouton:
+          - position: absolute
+          - top: 77%
+          - left: 50%
+          - width: calc(85% + 1px)
+          - transform: translate(-50%, calc(-50% + 10px))
+          - '--paper-card-background-color': rgba(0, 0, 0, 0.0)
+          - '--ha-card-background': rgba(0, 0, 0, 0.0)
+          - '--ha-card-box-shadow': none
+          - '--ha-card-border-width': 0px
+        jauge-cercle:
+          - top: '-02%'
+          - left: 66%
+          - width: 40%
+          - position: absolute
+          - opacity: 100%
+          - z-index: 2
+          - '--paper-card-background-color': rgba(0, 0, 0, 0.0)
+          - '--ha-card-background': rgba(0, 0, 0, 0.0)
+          - '--ha-card-box-shadow': none
+          - '--ha-card-border-width': 0px
+        lock:
+          - position: absolute
+          - top: 7%
+          - left: 88%
+          - width: calc(15% + 0px)
+          - transform: translate(-50%, calc(-50% + 10px))
+          - z-index: 1
+          - opacity: 100%
+          - '--paper-card-background-color': rgba(0, 0, 0, 0.0)
+          - '--ha-card-background': rgba(0, 0, 0, 0.0)
+          - '--ha-card-box-shadow': none
+          - '--ha-card-border-width': 0px
+        graph_temp:
+          - position: absolute
+          - top: 80%
+          - left: 50%
+          - width: calc(100% + 15px)
+          - transform: translate(-50%, calc(-50% + 10px))
+          - '--paper-card-background-color': rgba(0, 0, 0, 0.0)
+          - '--ha-card-background': rgba(0, 0, 0, 0.0)
+          - '--ha-card-box-shadow': none
+          - '--ha-card-border-width': 0px
+        notification:
+          - border-radius: 50%
+          - position: absolute
+          - left: 30px
+          - top: 4%
+          - height: 15px
+          - width: 15px
+          - font-size: 80%
+          - line-height: 15px
+          - font-weight: null
+          - background-color: |
+              [[[
+                if (entity.state == "off")
+                  return 'rgba(0,0,0,0)';
+               return 'var(--notification) ';
+              ]]]
+          - color: |
+              [[[
+                if (entity.state == "off")
+                  return 'rgba(0,0,0,0)';
+               return 'var(--text-on)';
+              ]]]
+    tap_action:
+      action: more-info
+    double_tap_action:
+      action: toggle
+  title_card:
+    show_icon: false
+    show_name: true
+    show_state: false
+    show_label: true
+    template:
+      - police
+      - no_style
+    styles:
+      name:
+        - color: var(--title)
+        - font-size: 14px
+        - font-weight: 500
+        - justify-self: start
+        - filter: drop-shadow(0px 2px 2px rgba(0,0,0,0.3))
+      label:
+        - color: var(--text-off)
+        - font-size: 14px
+        - font-weight: 500
+        - justify-self: start
+        - filter: drop-shadow(0px 2px 2px rgba(0,0,0,0.3))
+      card:
+        - height: auto
+        - padding: 0 0 0 15px
+        - border-radius: 0px
+        - line-height: 100%
+        - '--ha-card-border-width': 0px
+        - background: none
+    tap_action:
+      action: toggle
+    double-tap_action:
+      action: more-info
+  mini_card:
+    variables:
+      var_name_temp: Temp
+      var_name_hum: Hum
+      var_name_lum: Lum
+      var_name_mouv: Mouv
+    show_icon: true
+    show_name: false
+    show_state: false
+    show_label: true
+    template:
+      - police
+      - no_style
+    styles:
+      img_cell:
+        - border-radius: 50%
+        - width: 35px
+        - height: 35px
+        - background-color: none
+        - color: var(--text-on)
+      icon:
+        - width: 50%
+        - color: var(--icon-off)
+      label:
+        - font-weight: 500
+        - font-size: 13px
+        - opacity: 0.8
+        - color: var(--text-on)
+        - filter: drop-shadow(0px 2px 2px rgba(0,0,0,0.3))
+        - white-space: normal
+      state:
+        - font-weight: 500
+        - font-size: 13px
+        - opacity: 0.8
+        - color: var(--text-on)
+        - filter: drop-shadow(0px 2px 2px rgba(0,0,0,0.3))
+      name:
+        - font-weight: 500
+        - font-size: 13px
+        - opacity: 1
+        - color: var(--text-on)
+        - filter: drop-shadow(0px 2px 2px rgba(0,0,0,0.3))
+      card:
+        - border-radius: 0px
+        - height: auto
+      custom_fields:
+        notification:
+          - border-radius: 50%
+          - position: absolute
+          - left: 60%
+          - top: 4%
+          - height: 17px
+          - width: 17px
+          - font-size: 10px
+          - line-height: 16px
+          - font-weight: null
+          - background-color: |
+              [[[
+                if (entity.state == "off" || entity.state == "locked" || entity.state == 0 )
+                  return 'rgba(0,0,0,0)';
+               return 'var(--notification) ';
+              ]]]
+          - color: |
+              [[[
+                if (entity.state == "off" || entity.state == "locked" || entity.state == 0)
+                  return 'rgba(0,0,0,0)';
+               return 'var(--text-on)';
+              ]]]
+    double_tap_action:
+      action: toggle
+    tap_action:
+      action: more-info
+  sensor_activity_card:
+    template:
+      - base
+      - no_style
+    show_state: false
+    show_label: true
+    styles:
+      grid:
+        - grid-template-rows: min-content min-content 1fr
+        - grid-template-columns: 43px 1fr
+      name:
+        - color: var(--title)
+        - font-size: 16px
+        - margin-top: 2px
+      label:
+        - color: var(--text-on)
+        - margin-top: '-2px'
+        - white-space: normal
+      icon:
+        - color: var(--icon-off)
+      img_cell:
+        - border-radius: 8px
+        - background-color: var(--img-cell-off-blocs)
+      card:
+        - border-radius: 0px
+        - padding: 03px 4px 03px 0px
+        - background: transparent
+      custom_fields:
+        bubble:
+          - position: absolute
+          - font-size: 13px
+          - left: 25px
+          - top: '-2%'
+  security_mini_card_state:
+    state:
+      - operator: template
+        value: >-
+          [[[ return entity.state == "arming"  || entity.state == "unlocking" ||
+          entity.state == "locking" ]]]
+        styles:
+          img_cell:
+            - background-color: var(--img-cell-green)
+          icon:
+            - color: var(--icon-green)
+            - animation: blink 1s ease infinite
+      - operator: template
+        value: >-
+          [[[ return entity.state == "on" || entity.state == "home" ||
+          entity.state == "armed_away" || entity.state == "armed_home" || 
+          entity.state == "armed_night" || entity.state == "unlocked" ]]]
+        styles:
+          img_cell:
+            - background-color: var(--img-cell-red)
+          icon:
+            - color: var(--icon-red)
+      - operator: template
+        value: '[[[ return entity.state == "triggered" ]]]'
+        styles:
+          img_cell:
+            - background-color: var(--img-cell-red)
+          icon:
+            - color: var(--icon-red)
+            - animation: blink 0.8s ease infinite
+      - operator: template
+        value: '[[[ return entity.state == "pending" ]]]'
+        styles:
+          img_cell:
+            - background-color: var(--img-cell-orange)
+          icon:
+            - color: var(--icon-orange)
+            - animation: blink 1s ease infinite
+      - operator: template
+        value: >-
+          [[[ return entity.state == "unavailable"  || entity.state == "jammed"
+          || entity.state == "unknown" || entity.state =="Sur batterie" ]]]
+        styles:
+          img_cell:
+            - background-color: var(--img-cell-red)
+          icon:
+            - color: var(--icon-red)
+            - animation: blink 0.8s ease infinite
+          name:
+            - color: var(--icon-red)
+  weather_icon:
+    entity_picture: |
+      [[[
+        var weather = states['weather.TA_VILLE'].state;
+        if ((weather == 'sunny') && (states['sun.sun'].state == 'above_horizon'))
+          return "/local/weather/icones animes/clear-day.svg"
+        if ((weather == 'sunny') || (weather == 'clear-night') && (states['sun.sun'].state == 'below_horizon'))
+          return "/local/weather/icones animes/clear-night.svg"  
+
+        if ((weather == 'lightning-rainy') && (states['sun.sun'].state == 'above_horizon'))
+          return "/local/weather/icones animes/thunderstorms-day-rain.svg"
+        if ((weather == 'lightning-rainy') || (weather == 'clear-night') && (states['sun.sun'].state == 'below_horizon'))
+          return "/local/weather/icones animes/thunderstorms-night-rain.svg"
+
+        if ((weather == 'fog') && (states['sun.sun'].state == 'above_horizon'))
+          return "/local/weather/icones animes/fog-day.svg"             
+        if ((weather == 'fog') && (states['sun.sun'].state == 'below_horizon'))
+          return "/local/weather/icones animes/fog-night.svg"
+
+        if ((weather == 'partlycloudy') && (states['sun.sun'].state == 'above_horizon'))
+          return "/local/weather/icones animes/partly-cloudy-day.svg"                    
+        if ((weather == 'partlycloudy') && (states['sun.sun'].state == 'below_horizon'))
+          return "/local/weather/icones animes/partly-cloudy-night.svg"  
+
+        if ((weather == 'rainy') && (states['sun.sun'].state == 'above_horizon'))
+          return "/local/weather/icones animes/partly-cloudy-day-rain.svg"                      
+        if ((weather == 'rainy') && (states['sun.sun'].state == 'below_horizon'))
+          return "/local/weather/icones animes/partly-cloudy-night-rain.svg" 
+
+        if ((weather == 'lightning') && (states['sun.sun'].state == 'above_horizon'))
+          return "/local/weather/icones animes/thunderstorms-day.svg"                      
+        if ((weather == 'lightning') && (states['sun.sun'].state == 'below_horizon'))
+          return "/local/weather/icones animes/thunderstorms-night.svg" 
+
+        if (weather == 'clear-night')
+          return "/local/weather/icones animes/clear-night.svg";
+
+        if (weather == 'sleet')
+          return "/local/weather/icones animes/sleet.svg";  
+
+        if (weather == 'pouring')
+          return "/local/weather/icones animes/umbrella.svg"; 
+
+        if (weather == 'snowy-rainy')
+          return "/local/weather/icones animes/sleet.svg";  
+
+        if (weather == 'snow')
+          return "/local/weather/icones animes/snow.svg"; 
+
+        if (weather == 'snowy')
+          return "/local/weather/icones animes/snow.svg"; 
+
+        if (weather == 'cloudy')
+          return "/local/weather/icones animes/cloudy.svg"; 
+
+        if (weather == 'wind')
+          return "/local/weather/icones animes/wind.svg"; 
+
+        if (weather == 'hail')
+          return "/local/weather/icones animes/hail.svg"; 
+      ]]]
+  around_card:
+    styles:
+      grid:
+        - grid-template-areas: '"n" "info"'
+        - grid-template-columns: 1fr
+        - grid-template-rows: 1fr min-content min-content
+      card:
+        - padding: 12px
+  around_clear_card:
+    styles:
+      card:
+        - padding: 05px
+        - background: none
+        - box-shadow: none
+  label_state_temperature:
+    template:
+      - base
+      - no_style
+    show_state: false
+    show_label: true
+    styles:
+      grid:
+        - grid-template-rows: min-content min-content 1fr
+        - grid-template-columns: 43px 1fr
+      name:
+        - color: var(--title)
+        - font-size: 16px
+      label:
+        - color: |
+            [[[           
+              if (variables.temp_state  < 18.9)
+                return 'rgba(0,191,255,1)'   
+              if (variables.temp_state  > 26.9)
+                return 'rgba(255, 0, 0,1)'                 
+              if (variables.temp_state  > 24.9)
+                return 'rgba(255,99,71,1)'               
+              return "rgba(255,255,255,1)"
+            ]]]
+        - font-size: 13px
+        - margin-top: '-2px'
+        - white-space: normal
+      icon:
+        - color: var(--icon-off)
+      img_cell:
+        - border-radius: 8px
+        - background-color: var(--img-cell-off-blocs)
+      card:
+        - border-radius: 0px
+        - padding: 03px 4px 03px 0px
+        - background: transparent
+title: Floorplan
+views:
+  - title: Appartement
+    icon: mdi:floor-plan
+    type: panel
+    cards:
+      - type: picture-elements
+        image: /local/floorplan/day/floorplan_day.png?v=11
+        card_mod:
+          style: |
+            ha-card {
+              max-width: 1280px;
+              max-height: 800px;
+            }
+        elements:
+          - action: none
+            entity: sun.sun
+            hold_action:
+              action: none
+            state_image:
+              above_horizon: /local/floorplan/images/nixx.png
+              below_horizon: /local/floorplan/night/floorplan_night.png?v=2
+            style:
+              left: 50%
+              top: 50%
+              width: 100%
+            tap_action:
+              action: none
+            type: image
+          - type: custom:config-template-card
+            entities:
+              - input_select.floorplan_title_bloc_1
+            style:
+              left: 12%
+              top: 67%
+              width: 20%
+            element:
+              action: none
+              entity: input_select.floorplan_title_bloc_1
+              image: /local/floorplan/images/nixx.png
+              hold_action:
+                action: none
+              state_image:
+                Météo: /local/floorplan/images/title_meteo.png
+                Qualité air: /local/floorplan/images/title_qualite_air.png
+                Températures: /local/floorplan/images/title_temperatures.png?v=2
+              tap_action:
+                action: none
+              type: image
+          - type: custom:config-template-card
+            entities:
+              - input_select.floorplan_title_bloc_2
+            style:
+              left: 37%
+              top: 67%
+              width: 20%
+            element:
+              action: none
+              entity: input_select.floorplan_title_bloc_2
+              image: /local/floorplan/images/nixx.png
+              hold_action:
+                action: none
+              state_image:
+                Apps: /local/floorplan/images/title_apps.png
+                Média: /local/floorplan/images/title_media.png
+              tap_action:
+                action: none
+              type: image
+          - type: custom:config-template-card
+            entities:
+              - input_select.floorplan_title_bloc_3
+            style:
+              left: 62%
+              top: 67%
+              width: 20%
+            element:
+              action: none
+              entity: input_select.floorplan_title_bloc_3
+              image: /local/floorplan/images/nixx.png
+              hold_action:
+                action: none
+              state_image:
+                Chauffage: /local/floorplan/images/title_chauffage.png
+                Clim: /local/floorplan/images/title_clim.png
+                Energie: /local/floorplan/images/title_energie.png
+              tap_action:
+                action: none
+              type: image
+          - type: custom:config-template-card
+            entities:
+              - input_select.floorplan_title_bloc_4
+            style:
+              left: 87%
+              top: 67%
+              width: 20%
+            element:
+              action: none
+              entity: input_select.floorplan_title_bloc_4
+              image: /local/floorplan/images/nixx.png
+              hold_action:
+                action: none
+              state_image:
+                Agenda: /local/floorplan/images/title_agenda.png
+                Modes: /local/floorplan/images/title_modes.png
+              tap_action:
+                action: none
+              type: image
+          - type: conditional
+            conditions:
+              - entity: input_select.floorplan_show_agenda
+                state: tout
+            elements:
+              - action: none
+                entity: sun.sun
+                hold_action:
+                  action: none
+                state_image:
+                  above_horizon: /local/floorplan/images/nixx.png
+                  below_horizon: /local/floorplan/night/floorplan_night.png?v=2
+                style:
+                  left: 50%
+                  top: 50%
+                  width: 100%
+                tap_action:
+                  action: none
+                type: image
+          - type: custom:config-template-card
+            entities:
+              - switch.on_off_cadrepi
+            style:
+              left: 50%
+              top: 50%
+              width: 100%
+            element:
+              action: none
+              entity: switch.on_off_cadrepi
+              image: /local/floorplan/images/nixx.png
+              hold_action:
+                action: none
+              state_image:
+                'on': /local/floorplan/day/floorplan_day_light_cadrepi.png
+              tap_action:
+                action: none
+              type: image
+          - type: custom:config-template-card
+            entities:
+              - binary_sensor.porte_entree_contact
+            style:
+              left: 50%
+              top: 50%
+              width: 100%
+            element:
+              action: none
+              entity: binary_sensor.porte_entree_contact
+              image: /local/floorplan/images/nixx.png
+              hold_action:
+                action: none
+              state_image:
+                'on': /local/floorplan/day/floorplan_day_porte_entree_ouverte.png
+              tap_action:
+                action: none
+              type: image
+          - type: custom:config-template-card
+            entities:
+              - light.lampe_chevet
+            style:
+              left: 50%
+              top: 50%
+              width: 100%
+            element:
+              action: none
+              entity: light.lampe_chevet
+              image: /local/floorplan/images/nixx.png
+              hold_action:
+                action: none
+              state_image:
+                'on': /local/floorplan/day/floorplan_day_light_lampe_chevet.png?v=5
+              tap_action:
+                action: none
+              type: image
+          - type: custom:config-template-card
+            entities:
+              - light.vitrine
+            style:
+              left: 50%
+              top: 50%
+              width: 100%
+            element:
+              action: none
+              entity: light.vitrine
+              image: /local/floorplan/images/nixx.png
+              hold_action:
+                action: none
+              state_image:
+                'on': /local/floorplan/day/floorplan_day_light_vitrine.png?v=5
+              tap_action:
+                action: none
+              type: image
+          - type: custom:config-template-card
+            entities:
+              - switch.pc_gamer
+            style:
+              left: 50%
+              top: 50%
+              width: 100%
+            element:
+              action: none
+              entity: switch.pc_gamer
+              image: /local/floorplan/images/nixx.png
+              hold_action:
+                action: none
+              state_image:
+                'on': /local/floorplan/day/floorplan_day_light_pc.png
+              tap_action:
+                action: none
+              type: image
+          - type: custom:config-template-card
+            entities:
+              - binary_sensor.porte_entree_contact
+            style:
+              left: 50%
+              top: 50%
+              width: 100%
+            element:
+              action: none
+              entity: binary_sensor.porte_entree_contact
+              image: /local/floorplan/images/nixx.png
+              hold_action:
+                action: none
+              state_image:
+                'on': /local/floorplan/day/floorplan_day_porte_entree_ouverte.png
+              tap_action:
+                action: none
+              type: image
+          - type: custom:decluttering-card
+            template: haut_heure
+            style:
+              top: 3%
+              left: 50%
+          - type: custom:decluttering-card
+            template: haut_meteo
+            style:
+              top: 7%
+              left: 85%
+          - action: none
+            image: /local/floorplan/images/nixx.png
+            entity: sensor.weather_conditions
+            hold_action:
+              action: none
+            state_image:
+              Pluvieux: /local/floorplan/images/rain.gif
+              Fortes pluies: /local/floorplan/images/rain.gif
+            style:
+              left: 50%
+              mix-blend-mode: lighten
+              top: 8%
+              width: 110%
+            tap_action:
+              action: none
+            type: image
+          - action: none
+            image: /local/ui/nix100100.png
+            entity: sensor.clim_chambre_floorplan
+            hold_action:
+              action: none
+            state_image:
+              '1': /local/floorplan/images/airflow_slow.gif
+              '2': /local/floorplan/images/airflow_slow.gif
+              '3': /local/floorplan/images/airflow_slow.gif
+              '4': /local/floorplan/images/airflow_fast.gif
+              '5': /local/floorplan/images/airflow_fast.gif
+              auto: /local/floorplan/images/airflow_slow.gif
+            style:
+              left: 19%
+              top: 35%
+              width: 8%
+              mix-blend-mode: lighten
+              transform: rotate(90deg)
+            tap_action:
+              action: none
+            type: image
+          - action: none
+            image: /local/ui/nix100100.png
+            entity: sensor.clim_salon_floorplan
+            hold_action:
+              action: none
+            state_image:
+              '1': /local/floorplan/images/airflow_slow.gif
+              '2': /local/floorplan/images/airflow_slow.gif
+              '3': /local/floorplan/images/airflow_slow.gif
+              '4': /local/floorplan/images/airflow_fast.gif
+              '5': /local/floorplan/images/airflow_fast.gif
+              auto: /local/floorplan/images/airflow_slow.gif
+            style:
+              left: 30%
+              top: 37%
+              width: 8%
+              mix-blend-mode: lighten
+              transform: rotate(-90deg)
+            tap_action:
+              action: none
+            type: image
+          - action: none
+            entity: sensor.netatmo_hvac_action
+            hold_action:
+              action: none
+            state_image:
+              heating: /local/floorplan/images/smoker_animationloop.gif
+              idle: /local/floorplan/images/nix100100.png
+            style:
+              left: 83%
+              mix-blend-mode: screen
+              top: 25%
+              width: 15%
+              rotate: 90deg
+            tap_action:
+              action: none
+            type: image
+          - action: none
+            entity: switch.prise_diffuseur_he
+            hold_action:
+              action: none
+            state_image:
+              'on': /local/floorplan/images/smoker_animationloop.gif
+              'off': /local/floorplan/images/nix100100.png
+            style:
+              left: 17%
+              mix-blend-mode: screen
+              top: 20%
+              width: 10%
+            tap_action:
+              action: none
+            type: image
+          - type: image
+            image: /local/floorplan/images/nix100100.png
+            title: Zoomer sur l'entrée
+            style:
+              left: 77%
+              top: 26%
+              width: 6%
+              opacity: 100
+            tap_action:
+              action: navigate
+              navigation_path: /dashboard-floorplan/entree
+          - type: image
+            image: /local/floorplan/images/nix100100.png
+            title: Alarme
+            style:
+              left: 85%
+              top: 18%
+              width: 3%
+              opacity: 100
+              transform: scale(1,2.8)
+              rotate: 63deg
+            tap_action:
+              action: navigate
+              navigation_path: /dashboard-floorplan/alarme
+          - type: image
+            image: /local/floorplan/images/nix100100.png
+            title: Listes repas et courses
+            style:
+              left: 74.8%
+              top: 34%
+              width: 3%
+              opacity: 100
+              transform: scale(0.8,1)
+              rotate: '-10deg'
+            tap_action:
+              action: navigate
+              navigation_path: /dashboard-floorplan/listes-repas-et-courses
+          - type: image
+            image: /local/floorplan/images/nix100100.png
+            title: Budget
+            style:
+              left: 56%
+              top: 24%
+              width: 3%
+              opacity: 100
+              transform: scale(2,0.7)
+            tap_action:
+              action: navigate
+              navigation_path: /dashboard-floorplan/budget
+          - type: image
+            image: /local/floorplan/images/nix100100.png
+            title: Wi-Fi QR Code
+            style:
+              left: 80%
+              top: 14%
+              width: 4%
+              opacity: 100
+              transform: scale(0.5,1)
+              rotate: 60deg
+            tap_action:
+              action: fire-dom-event
+              browser_mod:
+                service: browser_mod.popup
+                data:
+                  content:
+                    type: picture
+                    image: /local/images/qr_code_wifi_invites.png
+                    card_mod:
+                      style: |
+                        ha-card {
+                          --ha-card-background: black;
+                        }
+                  title: Scanner le QR Code pour accéder au Wi-Fi Invités
+          - type: image
+            image: /local/floorplan/images/nix100100.png
+            title: Allumer PC Gamer
+            entity: switch.pc_gamer
+            style:
+              left: 33.5%
+              top: 30%
+              width: 2%
+              opacity: 100
+              transform: scale(1,0.8)
+              rotate: '-25deg'
+            tap_action:
+              action: more-info
+          - type: image
+            image: /local/floorplan/images/nix100100.png
+            entity: light.lampe_chevet
+            title: Allumer Lampe de chevet
+            style:
+              left: 29%
+              top: 33%
+              width: 2%
+              opacity: 100
+            tap_action:
+              action: toggle
+            hold_action:
+              action: more-info
+          - type: conditional
+            conditions:
+              - entity: light.lampe_chevet
+                state_not: 'off'
+            elements:
+              - type: image
+                image: /local/floorplan/images/nix100100.png
+                entity: light.lampe_chevet
+                title: Allumer/Régler la lampe de chevet
+                style:
+                  left: 29%
+                  top: 33%
+                  width: 2%
+                  opacity: 100
+                tap_action:
+                  action: toggle
+                hold_action:
+                  action: more-info
+          - type: image
+            image: /local/floorplan/images/nix100100.png
+            entity: light.vitrine
+            title: Allumer Vitrine
+            style:
+              left: 31.3%
+              top: 25%
+              width: 2%
+              opacity: 100
+              transform: scale(1.6,0.8)
+            tap_action:
+              action: toggle
+            hold_action:
+              action: more-info
+          - type: conditional
+            conditions:
+              - entity: light.vitrine
+                state_not: 'off'
+            elements:
+              - type: image
+                image: /local/floorplan/images/nix100100.png
+                entity: light.vitrine
+                title: Régler la Vitrine
+                style:
+                  left: 31.3%
+                  top: 25%
+                  width: 2%
+                  opacity: 100
+                  transform: scale(1.6,0.8)
+                tap_action:
+                  action: toggle
+                hold_action:
+                  action: more-info
+          - type: image
+            image: /local/floorplan/images/nix100100.png
+            entity: switch.prise_diffuseur_he
+            title: Allumer Diffuseur HE
+            style:
+              left: 19%
+              top: 26%
+              width: 1%
+              opacity: 100
+            tap_action:
+              action: toggle
+            hold_action:
+              action: more-info
+          - type: image
+            image: /local/floorplan/images/nix100100.png
+            title: Allumer Clim Salon
+            entity: climate.salon
+            style:
+              left: 20%
+              top: 31%
+              width: 20%
+              opacity: 100
+              transform: scale(0.08,0.2)
+              rotate: 6deg
+            tap_action:
+              action: more-info
+          - type: image
+            image: /local/floorplan/images/nix100100.png
+            title: Allumer Clim Chambre
+            entity: climate.chambre
+            style:
+              left: 17.5%
+              top: 31%
+              width: 20%
+              opacity: 100
+              transform: scale(0.08,0.2)
+              rotate: 6deg
+            tap_action:
+              action: more-info
+          - type: custom:decluttering-card
+            template: haut_alarme
+            style:
+              left: 94%
+              top: 15%
+          - type: custom:button-card
+            template:
+              - no_style
+            show_name: false
+            entity: input_select.floorplan_title_bloc_1
+            color: var(--secondary-color)
+            state:
+              - operator: '=='
+                value: Météo
+                color: var(--primary-color)
+            color_type: icon
+            haptic: medium
+            icon: mdi:weather-partly-cloudy
+            tap_action:
+              action: call-service
+              haptic: medium
+              service: input_select.select_option
+              service_data:
+                entity_id: input_select.floorplan_title_bloc_1
+                option: Météo
+            style:
+              left: 15%
+              top: 67%
+              width: 5%
+          - type: custom:button-card
+            template:
+              - no_style
+            show_name: false
+            entity: input_select.floorplan_title_bloc_1
+            color: var(--secondary-color)
+            state:
+              - operator: '=='
+                value: Qualité air
+                color: var(--primary-color)
+            color_type: icon
+            haptic: medium
+            icon: mdi:air-filter
+            tap_action:
+              action: call-service
+              haptic: medium
+              service: input_select.select_option
+              service_data:
+                entity_id: input_select.floorplan_title_bloc_1
+                option: Qualité air
+            style:
+              left: 19%
+              top: 67%
+              width: 5%
+          - type: custom:button-card
+            template:
+              - no_style
+            show_name: false
+            entity: input_select.floorplan_title_bloc_1
+            color: var(--secondary-color)
+            state:
+              - operator: '=='
+                value: Températures
+                color: var(--primary-color)
+            color_type: icon
+            haptic: medium
+            icon: mdi:thermometer
+            tap_action:
+              action: call-service
+              haptic: medium
+              service: input_select.select_option
+              service_data:
+                entity_id: input_select.floorplan_title_bloc_1
+                option: Températures
+            style:
+              left: 23%
+              top: 67%
+              width: 5%
+          - type: conditional
+            conditions:
+              - entity: input_select.floorplan_title_bloc_1
+                state: Météo
+            elements:
+              - type: custom:decluttering-card
+                template: bloc_1_meteo
+                style:
+                  left: 13%
+                  top: 83%
+                  width: 26%
+          - type: conditional
+            conditions:
+              - entity: input_select.floorplan_title_bloc_1
+                state: Qualité air
+            elements:
+              - type: custom:decluttering-card
+                template: bloc_1_qualite_air
+                style:
+                  left: 13%
+                  top: 83%
+                  width: 26%
+          - type: conditional
+            conditions:
+              - entity: input_select.floorplan_title_bloc_1
+                state: Températures
+            elements:
+              - type: custom:decluttering-card
+                template: bloc_1_temp
+                style:
+                  left: 15%
+                  top: 83%
+                  width: 26%
+          - type: custom:button-card
+            template:
+              - no_style
+            show_name: false
+            entity: input_select.floorplan_title_bloc_2
+            color: var(--secondary-color)
+            state:
+              - operator: '=='
+                value: Apps
+                color: var(--primary-color)
+            color_type: icon
+            haptic: medium
+            icon: mdi:apps
+            tap_action:
+              action: call-service
+              haptic: medium
+              service: input_select.select_option
+              service_data:
+                entity_id: input_select.floorplan_title_bloc_2
+                option: Apps
+            style:
+              left: 43%
+              top: 67%
+              width: 5%
+          - type: custom:button-card
+            template:
+              - no_style
+            show_name: false
+            entity: input_select.floorplan_title_bloc_2
+            color: var(--secondary-color)
+            state:
+              - operator: '=='
+                value: Média
+                color: var(--primary-color)
+            color_type: icon
+            haptic: medium
+            icon: mdi:youtube
+            tap_action:
+              action: call-service
+              haptic: medium
+              service: input_select.select_option
+              service_data:
+                entity_id: input_select.floorplan_title_bloc_2
+                option: Média
+            style:
+              left: 47%
+              top: 67%
+              width: 5%
+          - type: conditional
+            conditions:
+              - entity: input_select.floorplan_title_bloc_2
+                state: Apps
+            elements:
+              - type: custom:decluttering-card
+                template: bloc_2_apps
+                style:
+                  left: 37.5%
+                  top: 83%
+                  width: 22%
+          - type: conditional
+            conditions:
+              - entity: input_select.floorplan_title_bloc_2
+                state: Média
+            elements:
+              - type: custom:decluttering-card
+                template: bloc_2_media
+                style:
+                  left: 37.5%
+                  top: 83%
+                  width: 23%
+          - type: custom:button-card
+            template:
+              - no_style
+            show_name: false
+            entity: input_select.floorplan_title_bloc_3
+            color: var(--secondary-color)
+            state:
+              - operator: '=='
+                value: Chauffage
+                color: var(--primary-color)
+            color_type: icon
+            haptic: medium
+            icon: mdi:weather-sunny
+            tap_action:
+              action: call-service
+              haptic: medium
+              service: input_select.select_option
+              service_data:
+                entity_id: input_select.floorplan_title_bloc_3
+                option: Chauffage
+            style:
+              left: 64%
+              top: 67%
+              width: 5%
+          - type: custom:button-card
+            template:
+              - no_style
+            show_name: false
+            entity: input_select.floorplan_title_bloc_3
+            icon: mdi:snowflake
+            color: var(--secondary-color)
+            state:
+              - value: Clim
+                color: var(--primary-color)
+            tap_action:
+              action: call-service
+              service: input_select.select_option
+              haptic: medium
+              service_data:
+                entity_id: input_select.floorplan_title_bloc_3
+                option: Clim
+            style:
+              left: 68%
+              top: 67%
+              width: 5%
+          - type: custom:button-card
+            template:
+              - no_style
+            show_name: false
+            entity: input_select.floorplan_title_bloc_3
+            color: var(--secondary-color)
+            state:
+              - operator: '=='
+                value: Energie
+                color: var(--primary-color)
+            color_type: icon
+            haptic: medium
+            icon: mdi:lightning-bolt
+            tap_action:
+              action: call-service
+              haptic: medium
+              service: input_select.select_option
+              service_data:
+                entity_id: input_select.floorplan_title_bloc_3
+                option: Energie
+            style:
+              left: 72%
+              top: 67%
+              width: 5%
+          - type: conditional
+            conditions:
+              - entity: input_select.floorplan_title_bloc_3
+                state: Chauffage
+            elements:
+              - type: custom:decluttering-card
+                template: bloc_3_thermostat_netatmo
+                style:
+                  top: 83%
+                  left: 62.4%
+                  width: 23%
+          - type: conditional
+            conditions:
+              - entity: input_select.floorplan_title_bloc_3
+                state: Clim
+            elements:
+              - type: custom:swipe-card
+                style:
+                  left: 62.5%
+                  top: 84%
+                  width: 18%
+                cards:
+                  - type: custom:decluttering-card
+                    template: bloc_3_thermostat_mitsubishi
+                    variables:
+                      - name_clim: Salon
+                      - climate: climate.salon
+                      - clim_etat: sensor.clim_salon_etat
+                      - clim_temp_consigne: sensor.clim_salon_temperature_consigne
+                      - clim_fan_modes: sensor.clim_salon_fan_mode
+                      - clim_position_verticale: sensor.clim_salon_position_verticale
+                      - clim_position_horizontale: sensor.clim_salon_position_horizontale
+                      - input_select_modes: input_select.clim_salon_modes
+                      - input_select_fan_modes: input_select.clim_salon_fan_modes
+                      - script_decrement_consigne: script.clim_salon_decrement_consigne
+                      - script_increment_consigne: script.clim_salon_increment_consigne
+                      - script_on_off: script.clim_salon_on_off
+                  - type: custom:decluttering-card
+                    template: bloc_3_thermostat_mitsubishi
+                    variables:
+                      - name_clim: Chambre
+                      - climate: climate.chambre
+                      - clim_etat: sensor.clim_chambre_etat
+                      - clim_temp_consigne: sensor.clim_chambre_temperature_consigne
+                      - clim_fan_modes: sensor.clim_chambre_fan_mode
+                      - clim_position_verticale: sensor.clim_chambre_position_verticale
+                      - clim_position_horizontale: sensor.clim_chambre_position_horizontale
+                      - input_select_modes: input_select.clim_chambre_modes
+                      - input_select_fan_modes: input_select.clim_chambre_fan_modes
+                      - script_decrement_consigne: script.clim_chambre_decrement_consigne
+                      - script_increment_consigne: script.clim_chambre_increment_consigne
+                      - script_on_off: script.clim_chambre_on_off
+          - type: conditional
+            conditions:
+              - entity: input_select.floorplan_title_bloc_3
+                state: Energie
+            elements:
+              - type: custom:decluttering-card
+                template: bloc_3_energie
+                style:
+                  left: 62.5%
+                  top: 83%
+                  width: 25%
+          - type: custom:button-card
+            template:
+              - no_style
+            show_name: false
+            entity: input_select.floorplan_title_bloc_4
+            icon: mdi:calendar
+            color: var(--secondary-color)
+            state:
+              - value: Agenda
+                color: var(--primary-color)
+            tap_action:
+              action: call-service
+              service: input_select.select_option
+              haptic: medium
+              service_data:
+                entity_id: input_select.floorplan_title_bloc_4
+                option: Agenda
+            style:
+              left: 93%
+              top: 67%
+              width: 5%
+          - type: custom:button-card
+            template:
+              - no_style
+            show_name: false
+            entity: input_select.floorplan_title_bloc_4
+            color: var(--secondary-color)
+            state:
+              - operator: '=='
+                value: Modes
+                color: var(--primary-color)
+            color_type: icon
+            haptic: medium
+            icon: mdi:order-bool-ascending-variant
+            tap_action:
+              action: call-service
+              haptic: medium
+              service: input_select.select_option
+              service_data:
+                entity_id: input_select.floorplan_title_bloc_4
+                option: Modes
+            style:
+              left: 97%
+              top: 67%
+              width: 5%
+          - type: conditional
+            conditions:
+              - entity: input_select.floorplan_title_bloc_4
+                state: Agenda
+            elements:
+              - type: custom:decluttering-card
+                template: bloc_4_agenda
+                style:
+                  left: 87.5%
+                  top: 83%
+                  width: 22%
+          - type: conditional
+            conditions:
+              - entity: input_select.floorplan_title_bloc_4
+                state: Modes
+            elements:
+              - type: custom:decluttering-card
+                template: bloc_4_modes
+                style:
+                  left: 87.5%
+                  top: 80%
+                  width: 22%
+    theme: Google Dark Theme
+  - title: Todolist
+    path: todolist
+    icon: mdi:clipboard
+    type: panel
+    cards:
+      - type: todo-list
+        entity: todo.home_assistant
+    subview: true
+    theme: Google Dark Theme
+  - subview: true
+    title: Listes repas et courses
+    path: listes-repas-et-courses
+    type: panel
+    icon: mdi:clipboard-list
+    cards:
+      - type: vertical-stack
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: custom:button-card
+                template:
+                  - police
+                show_label: true
+                label: Recettes
+                icon: mdi:food
+                styles:
+                  icon:
+                    - width: 50px
+                    - color: var(--ocean-blue)
+                  card:
+                    - margin-top: 0px
+                    - opacity: 100%
+                    - background-color: rgba(0, 0, 0, 0.0)
+                tap_action:
+                  action: navigate
+                  navigation_path: /dashboard-floorplan/recettes
+              - type: custom:button-card
+                template:
+                  - police
+                show_name: false
+                show_label: true
+                show_entity_picture: true
+                label: Bring
+                entity: script.wallpanel_app_bring
+                entity_picture: /local/floorplan/images/logo_bring.png
+                styles:
+                  icon:
+                    - width: 50px
+                    - color: dodgerblue
+                  label:
+                    - font-size: 100%
+                  card:
+                    - background-color: rgba(0, 0, 0, 0.0)
+                tap_action:
+                  action: call-service
+                  service: script.wallpanel_app_bring
+              - type: custom:button-card
+                template:
+                  - police
+                show_label: true
+                label: Retour
+                icon: mdi:close
+                styles:
+                  icon:
+                    - width: 50px
+                    - color: var(--ocean-blue)
+                  card:
+                    - margin-top: 0px
+                    - opacity: 100%
+                    - background-color: rgba(0, 0, 0, 0.0)
+                tap_action:
+                  action: navigate
+                  navigation_path: /dashboard-floorplan
+          - type: horizontal-stack
+            cards:
+              - type: todo-list
+                entity: todo.liste_repas
+              - type: todo-list
+                entity: todo.courses
+  - type: panel
+    title: Recettes
+    path: recettes
+    icon: mdi:food
+    subview: true
+    cards:
+      - type: vertical-stack
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: custom:button-card
+                show_label: true
+                label: Listes repas et courses
+                icon: mdi:clipboard-list
+                styles:
+                  icon:
+                    - width: 50px
+                    - color: var(--ocean-blue)
+                  card:
+                    - margin-top: 0px
+                    - opacity: 100%
+                    - background-color: rgba(0, 0, 0, 0.0)
+                tap_action:
+                  action: navigate
+                  navigation_path: /dashboard-floorplan/listes-repas-et-courses
+              - type: custom:button-card
+                show_label: true
+                label: Retour
+                icon: mdi:close
+                styles:
+                  icon:
+                    - width: 50px
+                    - color: var(--ocean-blue)
+                  card:
+                    - margin-top: 0px
+                    - opacity: 100%
+                    - background-color: rgba(0, 0, 0, 0.0)
+                tap_action:
+                  action: navigate
+                  navigation_path: /dashboard-floorplan
+          - type: iframe
+            url: >-
+              https://docs.google.com/document/d/xxxx/edit?usp=drivesdk&ouid=xxxx&rtpof=true&sd=true
+            aspect_ratio: 50%
+  - subview: true
+    type: panel
+    title: Budget
+    path: budget
+    icon: mdi:currency-eur
+    cards:
+      - type: vertical-stack
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: custom:button-card
+                show_label: true
+                label: Retour
+                icon: mdi:close
+                styles:
+                  icon:
+                    - width: 20px
+                    - color: var(--ocean-blue)
+                  card:
+                    - margin-top: 0px
+                    - opacity: 100%
+                    - background-color: rgba(0, 0, 0, 0.0)
+                  label:
+                    - font-size: 10px
+                tap_action:
+                  action: navigate
+                  navigation_path: /dashboard-floorplan
+          - type: iframe
+            url: >-
+              https://docs.google.com/spreadsheets/d/xxxx/edit?usp=drive_link&ouid=xxxx&rtpof=true&sd=true
+            aspect_ratio: 50%
+  - title: Alarme
+    path: alarme
+    icon: mdi:shield-home
+    type: panel
+    subview: true
+    cards:
+      - type: vertical-stack
+        cards:
+          - type: custom:decluttering-card
+            template: header
+            variables:
+              - name: Alarme
+              - icon: mdi:shield-lock
+          - type: horizontal-stack
+            cards:
+              - type: custom:mushroom-alarm-control-panel-card
+                entity: alarm_control_panel.alarmo
+                states: []
+                fill_container: true
+                secondary_info: last-changed
+                tap_action:
+                  action: none
+                hold_action:
+                  action: none
+                double_tap_action:
+                  action: none
+                icon_type: entity-picture
+                primary_info: state
+              - type: custom:mushroom-entity-card
+                entity: group.portes
+                name: Ouvertures
+                icon: mdi:door
+                icon_type: entity-picture
+                fill_container: true
+          - type: custom:alarmo-card
+            entity: alarm_control_panel.alarmo
+            states:
+              armed_custom_bypass:
+                hide: true
+              armed_home:
+                hide: true
+            button_scale_keypad: 1.9
+            use_clear_icon: true
+            button_scale_actions: 1
+            show_messages: false
+            name: Alarme

@@ -1,0 +1,92 @@
+########################################
+# SWITCH ON/OFF PC Gamer
+########################################
+- platform: wake_on_lan
+  mac: 00:00:00:00:00:00
+  name: pc-gamer
+  host: 123.456.7.89
+  turn_off:
+    service: hassio.addon_stdin
+    data:
+      addon: core_rpc_shutdown
+      input: pc-gamer
+
+########################################
+# SWITCH ON/OFF PC EMMA
+########################################
+- platform: wake_on_lan
+  mac: 00:00:00:00:00:00
+  name: pc-emma
+  host: xxxx
+  turn_off:
+    service: hassio.addon_stdin
+    data:
+      addon: core_rpc_shutdown
+      input: pc-emma
+
+########################################
+# SWITCH ON/OFF CADREPI
+########################################
+- platform: template
+  switches:
+    on_off_cadrepi:
+      unique_id: on_off_cadrepi
+      availability_template: "{{ not is_state('switch.prise_cadrepi', 'unavailable') }}"
+      turn_on:
+        service: switch.turn_on
+        data: {}
+        target:
+          entity_id: switch.prise_cadrepi
+      turn_off:
+        service: script.cadrepi_off
+        data: {}
+
+########################################
+# SWITCH ON/OFF PARSECPI
+########################################
+- platform: template
+  switches:
+    on_off_parsecpi:
+      unique_id: on_off_parsecpi
+      availability_template: "{{ not is_state('switch.prise_parsecpi', 'unavailable') }}"
+      turn_on:
+        service: switch.turn_on
+        data: {}
+        target:
+          entity_id: switch.prise_parsecpi
+      turn_off:
+        service: script.parsecpi_off
+        data: {}
+
+########################################
+# SWITCH THEME AUTO
+########################################
+- platform: template
+  switches:
+    theme_auto:
+      turn_on:
+        service: script.theme_auto_on
+        data: {}
+      turn_off:
+        service: script.theme_auto_off
+        data: {}
+
+########################################
+# SWITCH ON/OFF CAMERAS PRIVACY
+########################################
+- platform: template
+  switches:
+    cameras_privacy_on_off:
+      unique_id: cameras_privacy_on_off
+      turn_on:
+        service: script.cameras_mode_confidentiel_on
+        data: {}
+      turn_off:
+        service: script.cameras_mode_confidentiel_off
+        data: {}
+      icon_template: >-
+        {% if is_state('switch.cameras_privacy_on_off', 'on') %}
+          mdi:eye-off-outline
+        {% else %}
+          mdi:eye-outline
+        {% endif %}

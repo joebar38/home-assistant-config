@@ -1,0 +1,1223 @@
+camera_cuisine_privacy_on:
+  alias: Caméra cuisine mode confidentiel ON
+  sequence:
+  - service: script.camera_cuisine_preset_mur
+    data: {}
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 5
+      milliseconds: 0
+  - service: switch.turn_on
+    data: {}
+    target:
+      entity_id: switch.camera_cuisine_privacy
+  icon: mdi:eye-off-outline
+  mode: single
+camera_cuisine_privacy_off:
+  alias: Caméra cuisine mode confidentiel OFF
+  sequence:
+  - service: switch.turn_off
+    data: {}
+    target:
+      entity_id: switch.camera_cuisine_privacy
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 10
+      milliseconds: 0
+  - service: script.camera_cuisine_preset_centre
+    data: {}
+  icon: mdi:eye-outline
+  mode: single
+camera_cuisine_preset_centre:
+  alias: Caméra cuisine preset centre
+  sequence:
+  - service: select.select_option
+    data:
+      option: Centre
+    target:
+      entity_id: select.camera_cuisine_move_to_preset
+  - service: input_text.set_value
+    data:
+      value: Centre
+    target:
+      entity_id: input_text.camera_cuisine_preset
+  icon: mdi:sofa
+  mode: single
+camera_cuisine_preset_chatiere:
+  alias: Caméra cuisine preset chatière
+  sequence:
+  - device_id: cb0d8de49f4740e62ccec42ad07d4f1a
+    domain: select
+    entity_id: c9215e5825b641beb5be94a1fd357e7f
+    type: select_option
+    option: Chatière
+  - service: input_text.set_value
+    data:
+      value: Chatière
+    target:
+      entity_id: input_text.camera_cuisine_preset
+  icon: mdi:cat
+  mode: single
+camera_cuisine_preset_entree:
+  alias: Caméra cuisine preset entrée
+  sequence:
+  - device_id: cb0d8de49f4740e62ccec42ad07d4f1a
+    domain: select
+    entity_id: c9215e5825b641beb5be94a1fd357e7f
+    type: select_option
+    option: Entrée
+  - service: input_text.set_value
+    data:
+      value: Entrée
+    target:
+      entity_id: input_text.camera_cuisine_preset
+  icon: mdi:door
+  mode: single
+camera_cuisine_preset_enregistrement:
+  alias: Caméra cuisine preset enregistrement
+  sequence:
+  - device_id: cb0d8de49f4740e62ccec42ad07d4f1a
+    domain: select
+    entity_id: c9215e5825b641beb5be94a1fd357e7f
+    type: select_option
+    option: Enregistrement
+  - service: input_text.set_value
+    data:
+      value: Enregistrement
+    target:
+      entity_id: input_text.camera_cuisine_preset
+  icon: mdi:record-circle-outline
+  mode: single
+camera_cuisine_preset_mur:
+  alias: Caméra cuisine preset mur
+  sequence:
+  - device_id: cb0d8de49f4740e62ccec42ad07d4f1a
+    domain: select
+    entity_id: c9215e5825b641beb5be94a1fd357e7f
+    type: select_option
+    option: Mur
+  - service: input_text.set_value
+    data:
+      value: Mur
+    target:
+      entity_id: input_text.camera_cuisine_preset
+  icon: mdi:cancel
+  mode: single
+netatmo_increment_consigne:
+  alias: Netatmo température +0,5
+  sequence:
+  - service: climate.set_temperature
+    metadata: {}
+    data:
+      temperature: '{{(states.sensor.netatmo_temperature_consigne.state | float +
+        0.5)}}'
+    target:
+      entity_id: climate.ma_piece
+  mode: single
+  icon: mdi:thermometer-plus
+netatmo_decrement_consigne:
+  alias: Netatmo température -0,5
+  sequence:
+  - service: climate.set_temperature
+    metadata: {}
+    data:
+      temperature: '{{(states.sensor.netatmo_temperature_consigne.state | float -
+        0.5)}}'
+    target:
+      entity_id: climate.ma_piece
+  mode: single
+  icon: mdi:thermometer-minus
+netatmo_mode_absent:
+  alias: Netatmo mode Absent
+  sequence:
+  - service: netatmo.set_preset_mode_with_end_datetime
+    metadata: {}
+    data:
+      preset_mode: away
+      end_datetime: '{{ date_heure }}'
+    target:
+      entity_id: climate.ma_piece
+  mode: single
+  icon: mdi:home-export-outline
+  fields:
+    date_heure:
+      selector:
+        datetime: {}
+      name: Date/heure
+      required: true
+netatmo_mode_hors_gel:
+  alias: Netatmo mode Hors-gel
+  sequence:
+  - service: netatmo.set_preset_mode_with_end_datetime
+    metadata: {}
+    data:
+      preset_mode: Frost Guard
+      end_datetime: '{{ date_heure }}'
+    target:
+      entity_id: climate.ma_piece
+  mode: single
+  icon: mdi:snowflake
+  fields:
+    date_heure:
+      selector:
+        datetime: {}
+      name: Date/heure
+      description: Entrer une date et une heure de fin (optionnel)
+      required: true
+netatmo_mode_schedule:
+  alias: Netatmo mode Planning
+  sequence:
+  - service: climate.set_preset_mode
+    target:
+      entity_id: climate.ma_piece
+    data:
+      preset_mode: Schedule
+  mode: single
+  icon: mdi:home-clock
+netatmo_on_off:
+  alias: Netatmo ON/OFF
+  sequence:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: climate.ma_piece
+        state: 'off'
+      sequence:
+      - service: climate.turn_on
+        data: {}
+        target:
+          entity_id: climate.ma_piece
+      - service: input_boolean.turn_off
+        data: {}
+        target:
+          entity_id: input_boolean.chauffage_mode_ete
+    default:
+    - service: climate.turn_off
+      data: {}
+      target:
+        entity_id: climate.ma_piece
+    - service: input_boolean.turn_on
+      data: {}
+      target:
+        entity_id: input_boolean.chauffage_mode_ete
+  mode: single
+  icon: mdi:power
+annonce_dans_sejour:
+  alias: Annonce dans séjour
+  sequence:
+  - service: tts.speak
+    data:
+      cache: true
+      media_player_entity_id: media_player.vlc_telnet
+      message: '{{ states.input_text.annonce_dans_sejour.state}}'
+    target:
+      entity_id: tts.piper
+  mode: single
+  icon: mdi:speaker-message
+annonce_geralt_groupe:
+  alias: Annonce Geralt Groupe
+  sequence:
+  - service: notify.telegram_groupe
+    data:
+      message: '{{ states.input_text.annonce_telegram_group.state}}'
+  mode: single
+  icon: mdi:message-text-fast
+find_my_phone:
+  alias: Trouver Smartphone Jérémy
+  sequence:
+  - service: notify.mobile_app_pixel_6_jh
+    data:
+      message: Home Assistant
+      title: Home Assistant recherche le téléphone!
+      data:
+        ttl: 0
+        priority: high
+        channel: alarm_stream
+  icon: mdi:phone-ring
+  mode: single
+find_her_phone:
+  alias: Trouver Smartphone Emma
+  icon: mdi:phone-ring
+  sequence:
+  - service: notify.mobile_app_galaxy_s21_fe
+    data:
+      message: command_ringer_mode
+      data:
+        command: normal
+  - service: notify.mobile_app_galaxy_s21_fe
+    data:
+      message: Home Assistant
+      title: Home Assistant recherche le téléphone!
+      data:
+        ttl: 0
+        priority: high
+        channel: alarm_stream
+  mode: single
+rechargement_integration_myelectricaldata:
+  alias: Rechargement intégration MyElectricaldata
+  sequence:
+  - service: hassio.addon_restart
+    data:
+      addon: db21ed7f_enedisgateway2mqtt
+  icon: mdi:reload
+  mode: single
+backup_full_ha:
+  alias: Backup full HA
+  sequence:
+  - service: hassio.backup_full
+    data:
+      compressed: true
+  mode: single
+  icon: mdi:cloud-upload
+template_reload:
+  alias: Rechargement templates
+  sequence:
+  - service: template.reload
+    data: {}
+  icon: mdi:reload
+  mode: single
+yaml_reload:
+  alias: Rechargement YAML config
+  sequence:
+  - service: homeassistant.reload_all
+    data: {}
+  icon: mdi:reload
+  mode: single
+ha_reboot:
+  alias: Redémarrage HA
+  sequence:
+  - service: hassio.host_reboot
+    data: {}
+  icon: mdi:reload
+  mode: single
+theme_reload:
+  alias: Rechargement thème
+  sequence:
+  - service: frontend.reload_themes
+    data: {}
+  icon: mdi:reload
+  mode: single
+theme_day:
+  alias: Thème jour
+  sequence:
+  - service: frontend.set_theme
+    data:
+      name: geek_light
+  icon: mdi:white-balance-sunny
+  mode: single
+theme_night:
+  alias: Thème nuit
+  sequence:
+  - service: frontend.set_theme
+    data:
+      name: geek_dark
+  icon: mdi:moon-waning-crescent
+  mode: single
+theme_auto_on:
+  alias: Thème auto jour/nuit ON
+  sequence:
+  - service: automation.turn_on
+    data: {}
+    target:
+      entity_id:
+      - automation.theme_jour_nuit
+  icon: mdi:theme-light-dark
+  mode: single
+theme_auto_off:
+  alias: Thème auto jour/nuit OFF
+  sequence:
+  - service: automation.turn_off
+    data: {}
+    target:
+      entity_id:
+      - automation.theme_jour_nuit
+  icon: mdi:theme-light-dark
+  mode: single
+camera_salon_2_confidentiel_on:
+  alias: Caméra salon mode confidentiel ON
+  sequence:
+  - service: notify.hahome
+    data:
+      target: trigger@applet.ifttt.com
+      title: '#camera_cuisine_private'
+      message: '#camera_cuisine_private'
+  - service: input_boolean.turn_on
+    data: {}
+    target:
+      entity_id: input_boolean.camera_salon_privacy_mode
+  mode: single
+  icon: mdi:eye-off-outline
+camera_salon_2_confidentiel_off:
+  alias: Caméra salon mode confidentiel OFF
+  sequence:
+  - service: notify.hahome
+    data:
+      target: trigger@applet.ifttt.com
+      title: '#camera_salon_not_private'
+      message: '#camera_salon_not_private'
+  - service: input_boolean.turn_off
+    data: {}
+    target:
+      entity_id: input_boolean.camera_salon_privacy_mode
+  mode: single
+  icon: mdi:eye-outline
+cameras_mode_confidentiel_on:
+  alias: Caméras mode confidentiel ON
+  sequence:
+  - service: script.camera_cuisine_privacy_on
+    data: {}
+    enabled: true
+  - service: script.camera_salon_2_confidentiel_on
+    data: {}
+    enabled: true
+  - service: notify.hahome
+    data:
+      target: trigger@applet.ifttt.com
+      title: '#camera_cuisine_private'
+      message: '#camera_cuisine_private'
+    enabled: false
+  mode: single
+  icon: mdi:eye-off-outline
+cameras_mode_confidentiel_off:
+  alias: Caméras mode confidentiel OFF
+  sequence:
+  - service: script.camera_cuisine_privacy_off
+    data: {}
+    enabled: true
+  - service: script.camera_salon_2_confidentiel_off
+    data: {}
+    enabled: true
+  - service: notify.hahome
+    data:
+      target: trigger@applet.ifttt.com
+      title: '#camera_cuisine_not_private'
+      message: '#camera_cuisine_not_private'
+    enabled: false
+  mode: single
+  icon: mdi:eye-outline
+parsecpi_off:
+  alias: ParsecPi OFF
+  sequence:
+  - service: shell_command.turn_off_parsecpi
+    data: {}
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 30
+      milliseconds: 0
+  - type: turn_off
+    device_id: 50b902051f5f0f75ad5899c66cddcbbb
+    entity_id: c45bd053f9f58eb3289efe6df1402b15
+    domain: switch
+  mode: single
+  icon: mdi:script
+cadrepi_off:
+  alias: CadrePi OFF
+  sequence:
+  - service: shell_command.turn_off_cadrepi
+    data: {}
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 30
+      milliseconds: 0
+  - type: turn_off
+    device_id: e1e25e41df7a8ca8b8325c20c8b4e838
+    entity_id: c92e3c72d0af4afaf27fa79636c40e59
+    domain: switch
+  mode: single
+  icon: mdi:projector-screen-off
+alarme_triggered_away:
+  alias: Alarme triggered away
+  sequence:
+  - type: turn_on
+    device_id: 3b30dd81261254f2c9e033e5418bedcb
+    entity_id: 2de500bd261f275bd2ad80b359b29488
+    domain: switch
+    enabled: true
+  - type: turn_on
+    device_id: cb0d8de49f4740e62ccec42ad07d4f1a
+    entity_id: 681fa54354f46189f330daeb0aeff53e
+    domain: switch
+  mode: single
+  icon: mdi:alarm-light
+alarme_triggered_home:
+  alias: Alarme triggered home
+  sequence:
+  - service: mqtt.publish
+    data:
+      topic: zigbee2mqtt/Sirène/set/
+      payload: '{"duration": 3600, "brightness":0, "volume": 100, "alarm": true}'
+      qos: '2'
+  - type: turn_on
+    device_id: cb0d8de49f4740e62ccec42ad07d4f1a
+    entity_id: 681fa54354f46189f330daeb0aeff53e
+    domain: switch
+  mode: single
+  icon: mdi:alarm-light
+alarme_sos:
+  alias: Alarme SOS
+  sequence:
+  - type: turn_on
+    device_id: 3b30dd81261254f2c9e033e5418bedcb
+    entity_id: 2de500bd261f275bd2ad80b359b29488
+    domain: switch
+    enabled: true
+  - if:
+    - condition: state
+      entity_id: switch.cameras_privacy_on_off
+      state: 'on'
+    then:
+    - service: script.alarme_cameras_armees
+      data: {}
+    - delay:
+        hours: 0
+        minutes: 0
+        seconds: 10
+        milliseconds: 0
+  - service: script.alarme_camera_salon_motions_on
+    metadata: {}
+    data: {}
+  - service: script.alarme_camera_salon_auto_track_on
+    metadata: {}
+    data: {}
+  - device_id: cb0d8de49f4740e62ccec42ad07d4f1a
+    domain: select
+    entity_id: c9215e5825b641beb5be94a1fd357e7f
+    type: select_option
+    option: Centre
+  mode: single
+  icon: mdi:alarm-light
+alarme_petite_sirene_off:
+  alias: Alarme petite sirène OFF
+  sequence:
+  - service: mqtt.publish
+    data:
+      topic: zigbee2mqtt/Sirène/set/
+      payload: '{"duration": 0, "brightness":0, "volume": 0, "alarm": true}'
+      qos: '2'
+    enabled: true
+  mode: single
+  icon: mdi:bullhorn-outline
+alarme_petite_sirene_off_keyfobs:
+  alias: Alarme petite sirène OFF keyfobs
+  sequence:
+  - service: mqtt.publish
+    data:
+      topic: zigbee2mqtt/Sirène/set/
+      payload: '{"duration": 1, "brightness":0, "volume": 7, "alarm": true}'
+      qos: '2'
+    enabled: true
+  mode: single
+  icon: mdi:bullhorn-outline
+alarme_grosse_sirene_on:
+  alias: Alarme grosse sirène ON
+  sequence:
+  - type: turn_on
+    device_id: 3b30dd81261254f2c9e033e5418bedcb
+    entity_id: 2de500bd261f275bd2ad80b359b29488
+    domain: switch
+    enabled: true
+  mode: single
+  icon: mdi:bullhorn-variant
+alarme_grosse_sirene_off:
+  alias: Alarme grosse sirène OFF
+  sequence:
+  - type: turn_off
+    device_id: 3b30dd81261254f2c9e033e5418bedcb
+    entity_id: 2de500bd261f275bd2ad80b359b29488
+    domain: switch
+    enabled: true
+  mode: single
+  icon: mdi:bullhorn-variant-outline
+alarme_camera_salon_auto_track_on:
+  alias: Alarme caméra salon Auto Track ON
+  sequence:
+  - type: turn_on
+    device_id: cb0d8de49f4740e62ccec42ad07d4f1a
+    entity_id: 681fa54354f46189f330daeb0aeff53e
+    domain: switch
+  mode: single
+  icon: mdi:cctv
+alarme_camera_salon_auto_track_off:
+  alias: Alarme caméra salon Auto Track OFF
+  sequence:
+  - type: turn_off
+    device_id: cb0d8de49f4740e62ccec42ad07d4f1a
+    entity_id: 681fa54354f46189f330daeb0aeff53e
+    domain: switch
+  mode: single
+  icon: mdi:cctv-off
+alarme_petite_sirene_on_armement:
+  alias: Alarme petite sirène ON armement
+  sequence:
+  - service: mqtt.publish
+    data:
+      topic: zigbee2mqtt/Sirène/set/
+      payload: '{"duration": 2, "brightness":0, "volume": 7, "alarm": true}'
+      qos: '2'
+    enabled: true
+  mode: single
+  icon: mdi:shield-lock
+alarme_camera_salon_motions_off:
+  alias: Alarme caméra salon motions OFF
+  sequence:
+  - device_id: cb0d8de49f4740e62ccec42ad07d4f1a
+    domain: select
+    entity_id: 42abbe6f763f515160125d6f0d986c93
+    type: select_option
+    option: 'off'
+  - device_id: cb0d8de49f4740e62ccec42ad07d4f1a
+    domain: select
+    entity_id: a67a97bd9a6936ef3f900e469844176a
+    type: select_option
+    option: 'off'
+  mode: single
+  icon: mdi:cctv-off
+alarme_desarmer:
+  alias: Alarme désarmer
+  sequence:
+  - service: alarmo.disarm
+    metadata: {}
+    data:
+      entity_id: alarm_control_panel.alarmo
+      code: 'CODE_ALARME'
+  mode: single
+  icon: mdi:shield-off
+alarme_petite_sirene_on_en_suspens:
+  alias: Alarme petite sirène ON en suspens
+  sequence:
+  - service: mqtt.publish
+    data:
+      topic: zigbee2mqtt/Sirène/set/
+      payload: '{"duration": 30, "brightness":0, "volume": 10, "alarm": true}'
+      qos: '2'
+    enabled: true
+  mode: single
+  icon: mdi:bullhorn
+alarme_absent_armer:
+  alias: Alarme absent armer
+  sequence:
+  - service: alarmo.arm
+    data:
+      mode: away
+      entity_id: alarm_control_panel.alarmo
+      code: 'CODE_ALARME'
+  mode: single
+  icon: mdi:shield-lock
+alarme_cameras_armees:
+  alias: Alarme caméras armées
+  sequence:
+  - service: switch.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id: switch.cameras_privacy_on_off
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 5
+      milliseconds: 0
+  - service: script.alarme_camera_salon_motions_on
+    metadata: {}
+    data: {}
+  mode: single
+  icon: mdi:cctv
+alarme_cameras_desarmees:
+  alias: Alarme caméras désarmées
+  sequence:
+  - service: script.alarme_camera_salon_motions_off
+    metadata: {}
+    data: {}
+  - service: script.alarme_camera_salon_auto_track_off
+    metadata: {}
+    data: {}
+  - service: switch.turn_on
+    target:
+      entity_id:
+      - switch.cameras_privacy_on_off
+    data: {}
+  mode: single
+  icon: mdi:cctv-off
+alarme_camera_salon_motions_on:
+  alias: Alarme caméra salon motions ON
+  sequence:
+  - device_id: cb0d8de49f4740e62ccec42ad07d4f1a
+    domain: select
+    entity_id: 42abbe6f763f515160125d6f0d986c93
+    type: select_option
+    option: high
+  - device_id: cb0d8de49f4740e62ccec42ad07d4f1a
+    domain: select
+    entity_id: a67a97bd9a6936ef3f900e469844176a
+    type: select_option
+    option: high
+  mode: single
+  icon: mdi:cctv
+alarme_petite_sirene_on_presence:
+  alias: Alarme petite sirène ON présence
+  sequence:
+  - service: mqtt.publish
+    data:
+      topic: zigbee2mqtt/Sirène/set/
+      payload: '{"duration": 3600, "brightness":0, "volume": 50, "alarm": true}'
+      qos: '2'
+    enabled: true
+  mode: single
+  icon: mdi:bullhorn
+alarme_presence_armer:
+  alias: Alarme présence armer
+  sequence:
+  - service: alarmo.arm
+    data:
+      mode: home
+      entity_id: alarm_control_panel.alarmo
+      code: 'CODE_ALARME'
+  mode: single
+  icon: mdi:shield-home
+wallpanel_app_spotify:
+  alias: Wallpanel app Spotify
+  sequence:
+  - service: notify.mobile_app_wallpanel
+    data:
+      title: Lancer Spotify
+      message: Lancer Spotify
+  mode: single
+  icon: mdi:spotify
+wallpanel_app_youtube:
+  alias: Wallpanel App YouTube
+  sequence:
+  - service: notify.mobile_app_wallpanel
+    data:
+      title: Lancer YouTube
+      message: Lancer YouTube
+  mode: single
+  icon: mdi:youtube
+wallpanel_app_netatmo:
+  alias: Wallpanel App Netatmo
+  sequence:
+  - service: notify.mobile_app_wallpanel
+    data:
+      title: Lancer Netatmo
+      message: Lancer Netatmo
+  mode: single
+  icon: mdi:thermostat
+wallpanel_app_minuteur:
+  alias: Wallpanel App Minuteur
+  sequence:
+  - service: notify.mobile_app_wallpanel
+    data:
+      title: Lancer Minuteur
+      message: Lancer Minuteur
+  mode: single
+  icon: mdi:alarm
+wallpanel_app_deliveroo:
+  alias: Wallpanel app Deliveroo
+  sequence:
+  - service: notify.mobile_app_wallpanel
+    data:
+      title: Lancer Deliveroo
+      message: Lancer Deliveroo
+  mode: single
+  icon: mdi:food
+wallpanel_app_tasker:
+  alias: Wallpanel App Tasker
+  sequence:
+  - service: notify.mobile_app_wallpanel
+    data:
+      title: Lancer Tasker
+      message: Lancer Tasker
+  mode: single
+  icon: mdi:cog
+wallpanel_app_netflix:
+  alias: Wallpanel App Netflix
+  sequence:
+  - service: notify.mobile_app_wallpanel
+    data:
+      title: Lancer Netflix
+      message: Lancer Netflix
+  mode: single
+  icon: mdi:netflix
+wallpanel_app_prime_video:
+  alias: Wallpanel App Prime Vidéo
+  sequence:
+  - service: notify.mobile_app_wallpanel
+    data:
+      title: Lancer Prime Vidéo
+      message: Lancer Prime Vidéo
+  mode: single
+  icon: mdi:movie
+wallpanel_app_mycanal:
+  alias: Wallpanel App MyCanal
+  sequence:
+  - service: notify.mobile_app_wallpanel
+    data:
+      title: Lancer MyCanal
+      message: Lancer MyCanal
+  mode: single
+  icon: mdi:movie
+wallpanel_app_disney_plus:
+  alias: Wallpanel App Disney +
+  sequence:
+  - service: notify.mobile_app_wallpanel
+    data:
+      title: Lancer Disney +
+      message: Lancer Disney +
+  mode: single
+  icon: mdi:movie
+wallpanel_deconnexion_bt:
+  alias: Wallpanel Déconnexion BT
+  sequence:
+  - service: notify.mobile_app_wallpanel
+    data:
+      title: Déconnexion BT
+      message: Déconnexion BT
+  mode: single
+  icon: mdi:bluetooth-off
+wallpanel_app_bring:
+  alias: Wallpanel app Bring
+  sequence:
+  - service: notify.mobile_app_wallpanel
+    data:
+      title: Lancer Bring
+      message: Lancer Bring
+  mode: single
+  icon: mdi:list-box
+wallpanel_app_play_store:
+  alias: Wallpanel app Play Store
+  sequence:
+  - service: notify.mobile_app_wallpanel
+    data:
+      title: Lancer Play Store
+      message: Lancer Play Store
+  mode: single
+  icon: mdi:apps
+netatmo_off:
+  alias: Netatmo OFF
+  sequence:
+  - service: climate.turn_off
+    data: {}
+    target:
+      entity_id: climate.ma_piece
+  - service: input_boolean.turn_on
+    data: {}
+    target:
+      entity_id: input_boolean.chauffage_mode_ete
+  mode: single
+  icon: mdi:power
+netatmo_on:
+  alias: Netatmo ON
+  sequence:
+  - service: climate.turn_on
+    target:
+      entity_id:
+      - climate.ma_piece
+    data: {}
+  - service: input_boolean.turn_off
+    target:
+      entity_id:
+      - input_boolean.chauffage_mode_ete
+    data: {}
+  mode: single
+  icon: mdi:power
+clim_salon_decrement_consigne:
+  alias: Clim salon température +0,5
+  sequence:
+  - service: climate.set_temperature
+    metadata: {}
+    data:
+      temperature: '{{(states.sensor.clim_salon_temperature_consigne.state | float
+        + 0.5)}}'
+    target:
+      entity_id: climate.salon
+  mode: single
+  icon: mdi:thermometer-plus
+clim_chambre_increment_consigne:
+  alias: Clim chambre température +0,5
+  sequence:
+  - service: climate.set_temperature
+    metadata: {}
+    data:
+      temperature: '{{(states.sensor.clim_chambre_temperature_consigne.state | float
+        + 0.5)}}'
+    target:
+      entity_id: climate.chambre
+  mode: single
+  icon: mdi:thermometer-plus
+clim_chambre_decrement_consigne:
+  alias: Clim chambre température -0,5
+  sequence:
+  - service: climate.set_temperature
+    metadata: {}
+    data:
+      temperature: '{{(states.sensor.clim_chambre_temperature_consigne.state | float
+        - 0.5)}}'
+    target:
+      entity_id: climate.chambre
+  mode: single
+  icon: mdi:thermometer-minus
+clim_salon_increment_consigne:
+  alias: Clim salon température -0,5
+  sequence:
+  - service: climate.set_temperature
+    metadata: {}
+    data:
+      temperature: '{{(states.sensor.clim_salon_temperature_consigne.state | float
+        - 0.5)}}'
+    target:
+      entity_id: climate.salon
+  mode: single
+  icon: mdi:thermometer-minus
+clim_salon_on:
+  alias: Clim salon ON
+  sequence:
+  - service: climate.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: climate.salon
+  icon: mdi:power
+  mode: single
+clim_chambre_on:
+  alias: Clim chambre ON
+  sequence:
+  - service: climate.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id:
+      - climate.chambre
+  icon: mdi:power
+  mode: single
+clim_chambre_off:
+  alias: Clim chambre OFF
+  sequence:
+  - service: climate.turn_off
+    target:
+      entity_id:
+      - climate.chambre
+    data: {}
+  icon: mdi:power
+  mode: single
+clim_salon_off:
+  alias: Clim salon OFF
+  sequence:
+  - service: climate.turn_off
+    target:
+      entity_id:
+      - climate.salon
+    data: {}
+  icon: mdi:power
+  mode: single
+clim_salon_modes:
+  alias: Clim salon modes
+  sequence:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: input_select.clim_salon_modes
+        state: Chauffage
+      sequence:
+      - service: climate.set_hvac_mode
+        metadata: {}
+        data:
+          hvac_mode: heat
+        target:
+          entity_id: climate.salon
+    - conditions:
+      - condition: state
+        entity_id: input_select.clim_salon_modes
+        state: Déshum
+      sequence:
+      - service: climate.set_hvac_mode
+        metadata: {}
+        data:
+          hvac_mode: dry
+        target:
+          entity_id: climate.salon
+    - conditions:
+      - condition: state
+        entity_id: input_select.clim_salon_modes
+        state: Clim
+      sequence:
+      - service: climate.set_hvac_mode
+        metadata: {}
+        data:
+          hvac_mode: cool
+        target:
+          entity_id: climate.salon
+    - conditions:
+      - condition: state
+        entity_id: input_select.clim_salon_modes
+        state: Ventil
+      sequence:
+      - service: climate.set_hvac_mode
+        metadata: {}
+        data:
+          hvac_mode: fan_only
+        target:
+          entity_id: climate.salon
+    - conditions:
+      - condition: state
+        entity_id: input_select.clim_salon_modes
+        state: Auto
+      sequence:
+      - service: climate.set_hvac_mode
+        metadata: {}
+        data:
+          hvac_mode: auto
+        target:
+          entity_id: climate.salon
+  mode: single
+  icon: mdi:cog
+clim_chambre_modes:
+  alias: Clim chambre modes
+  sequence:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: input_select.clim_chambre_modes
+        state: Chauffage
+      sequence:
+      - service: climate.set_hvac_mode
+        metadata: {}
+        data:
+          hvac_mode: heat
+        target:
+          entity_id: climate.chambre
+    - conditions:
+      - condition: state
+        entity_id: input_select.clim_chambre_modes
+        state: Déshum
+      sequence:
+      - service: climate.set_hvac_mode
+        metadata: {}
+        data:
+          hvac_mode: dry
+        target:
+          entity_id: climate.chambre
+    - conditions:
+      - condition: state
+        entity_id: input_select.clim_chambre_modes
+        state: Clim
+      sequence:
+      - service: climate.set_hvac_mode
+        metadata: {}
+        data:
+          hvac_mode: cool
+        target:
+          entity_id: climate.chambre
+    - conditions:
+      - condition: state
+        entity_id: input_select.clim_chambre_modes
+        state: Ventil
+      sequence:
+      - service: climate.set_hvac_mode
+        metadata: {}
+        data:
+          hvac_mode: fan_only
+        target:
+          entity_id: climate.chambre
+    - conditions:
+      - condition: state
+        entity_id: input_select.clim_chambre_modes
+        state: Auto
+      sequence:
+      - service: climate.set_hvac_mode
+        metadata: {}
+        data:
+          hvac_mode: auto
+        target:
+          entity_id: climate.chambre
+  mode: single
+  icon: mdi:cog
+clim_chambre_fan_modes:
+  alias: Clim chambre fan modes
+  sequence:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: input_select.clim_chambre_fan_modes
+        state: Auto
+      sequence:
+      - service: climate.set_fan_mode
+        target:
+          entity_id:
+          - climate.chambre
+        data:
+          fan_mode: auto
+    - conditions:
+      - condition: state
+        entity_id: input_select.clim_chambre_fan_modes
+        state: '1'
+      sequence:
+      - service: climate.set_fan_mode
+        target:
+          entity_id:
+          - climate.chambre
+        data:
+          fan_mode: '1'
+    - conditions:
+      - condition: state
+        entity_id: input_select.clim_chambre_fan_modes
+        state: '2'
+      sequence:
+      - service: climate.set_fan_mode
+        target:
+          entity_id:
+          - climate.chambre
+        data:
+          fan_mode: '2'
+    - conditions:
+      - condition: state
+        entity_id: input_select.clim_chambre_fan_modes
+        state: '3'
+      sequence:
+      - service: climate.set_fan_mode
+        target:
+          entity_id:
+          - climate.chambre
+        data:
+          fan_mode: '3'
+    - conditions:
+      - condition: state
+        entity_id: input_select.clim_chambre_fan_modes
+        state: '4'
+      sequence:
+      - service: climate.set_fan_mode
+        target:
+          entity_id:
+          - climate.chambre
+        data:
+          fan_mode: '4'
+    - conditions:
+      - condition: state
+        entity_id: input_select.clim_chambre_fan_modes
+        state: '5'
+      sequence:
+      - service: climate.set_fan_mode
+        target:
+          entity_id:
+          - climate.chambre
+        data:
+          fan_mode: '5'
+  mode: single
+  icon: mdi:fan
+clim_salon_fan_modes:
+  alias: Clim salon fan modes
+  sequence:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: input_select.clim_salon_fan_modes
+        state: Auto
+      sequence:
+      - service: climate.set_fan_mode
+        target:
+          entity_id:
+          - climate.salon
+        data:
+          fan_mode: auto
+    - conditions:
+      - condition: state
+        entity_id: input_select.clim_salon_fan_modes
+        state: '1'
+      sequence:
+      - service: climate.set_fan_mode
+        target:
+          entity_id:
+          - climate.salon
+        data:
+          fan_mode: '1'
+    - conditions:
+      - condition: state
+        entity_id: input_select.clim_salon_fan_modes
+        state: '2'
+      sequence:
+      - service: climate.set_fan_mode
+        target:
+          entity_id:
+          - climate.salon
+        data:
+          fan_mode: '2'
+    - conditions:
+      - condition: state
+        entity_id: input_select.clim_salon_fan_modes
+        state: '3'
+      sequence:
+      - service: climate.set_fan_mode
+        target:
+          entity_id:
+          - climate.salon
+        data:
+          fan_mode: '3'
+    - conditions:
+      - condition: state
+        entity_id: input_select.clim_salon_fan_modes
+        state: '4'
+      sequence:
+      - service: climate.set_fan_mode
+        target:
+          entity_id:
+          - climate.salon
+        data:
+          fan_mode: '4'
+    - conditions:
+      - condition: state
+        entity_id: input_select.clim_salon_fan_modes
+        state: '5'
+      sequence:
+      - service: climate.set_fan_mode
+        target:
+          entity_id:
+          - climate.salon
+        data:
+          fan_mode: '5'
+  mode: single
+  icon: mdi:fan
+clim_salon_on_off:
+  alias: Clim salon ON/OFF
+  sequence:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: climate.salon
+        state: 'off'
+      sequence:
+      - service: climate.turn_on
+        data: {}
+        target:
+          entity_id:
+          - climate.salon
+    default:
+    - service: climate.turn_off
+      data: {}
+      target:
+        entity_id:
+        - climate.salon
+  mode: single
+  icon: mdi:power
+clim_chambre_on_off:
+  alias: Clim chambre ON/OFF
+  sequence:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: climate.chambre
+        state: 'off'
+      sequence:
+      - service: climate.turn_on
+        data: {}
+        target:
+          entity_id:
+          - climate.chambre
+    default:
+    - service: climate.turn_off
+      data: {}
+      target:
+        entity_id:
+        - climate.chambre
+  mode: single
+  icon: mdi:power

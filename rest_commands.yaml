@@ -1,0 +1,2 @@
+healthcheck:
+  url: !secret healthcheck_ping

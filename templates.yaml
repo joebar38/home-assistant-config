@@ -1,0 +1,501 @@
+##############################################
+# METEO
+##############################################
+
+- trigger:
+    - platform: time_pattern
+      hours: /1
+  action:
+    - service: weather.get_forecasts
+      target:
+        entity_id: weather.TA_VILLE
+      data:
+        type: daily
+      response_variable: daily
+  sensor:
+    - name: Saint Egreve Daily Forecast
+      unique_id: TA_VILLE_daily_forecast
+      state: "{{ daily['weather.TA_VILLE'].forecast[0].condition }}"
+      attributes:
+        forecast: "{{ daily['weather.TA_VILLE'].forecast }}"
+
+- trigger:
+    - platform: time_pattern
+      hours: /1
+  action:
+    - service: weather.get_forecasts
+      target:
+        entity_id: weather.TA_VILLE
+      data:
+        type: hourly
+      response_variable: hourly
+  sensor:
+    - name: Saint Egreve Hourly Forecast
+      unique_id: TA_VILLE_hourly_forecast
+      state: "{{ hourly['weather.TA_VILLE'].forecast[0].condition }}"
+      attributes:
+        forecast: "{{ hourly['weather.TA_VILLE'].forecast }}"
+
+
+##############################################
+# CALENDRIERS
+##############################################
+
+# Jérémy
+- trigger:
+    - platform: time_pattern
+      minutes: /1
+  action:
+    - service: calendar.get_events
+      target:
+        entity_id: calendar.jeremy
+      data:
+        duration:
+          hours: 24
+      response_variable: agenda
+    - variables:
+        events: "{{ agenda['calendar.jeremy']['events'] }}"
+  sensor:
+    - name: Calendrier Jérémy
+      unique_id: calendrier_jeremy
+      icon: mdi:calendar
+      state: "{{ events | count}}"
+      attributes:
+        events: >
+          {%- if events | count > 0 %}
+            {%- for event in events %}
+            {%- set start = event.start | as_datetime | as_local %}
+              {%- if events | count == 1 %}
+                {{ ["Aujourd'hui", 'Demain'][(start.date() - now().date()).days]}} à {{ event.start | as_timestamp | timestamp_custom('%H:%M') }} : {{ event.summary }}
+              {%- elif events | count > 1 %}
+                {{ ["Aujourd'hui", 'Demain'][(start.date() - now().date()).days]}} à {{ event.start | as_timestamp | timestamp_custom('%H:%M') }} : {{ event.summary }} <br>
+              {%- endif %}
+            {%- endfor %}
+          {%- else %}
+            Aucun événement
+          {%- endif %}
+
+# Emma
+- trigger:
+    - platform: time_pattern
+      minutes: /1
+  action:
+    - service: calendar.get_events
+      target:
+        entity_id: calendar.emma
+      data:
+        duration:
+          hours: 24
+      response_variable: agenda
+    - variables:
+        events: "{{ agenda['calendar.emma']['events'] }}"
+  sensor:
+    - name: Calendrier Emma
+      unique_id: calendrier_emma
+      icon: mdi:calendar
+      state: "{{ events | count}}"
+      attributes:
+        events: >
+          {%- if events | count > 0 %}
+            {%- for event in events %}
+            {%- set start = event.start | as_datetime | as_local %}
+              {%- if events | count == 1 %}
+                {{ ["Aujourd'hui", 'Demain'][(start.date() - now().date()).days]}} à {{ event.start | as_timestamp | timestamp_custom('%H:%M') }} : {{ event.summary }}
+              {%- elif events | count > 1 %}
+                {{ ["Aujourd'hui", 'Demain'][(start.date() - now().date()).days]}} à {{ event.start | as_timestamp | timestamp_custom('%H:%M') }} : {{ event.summary }} <br>
+              {%- endif %}
+            {%- endfor %}
+          {%- else %}
+            Aucun événement
+          {%- endif %}
+
+# Anniversaires
+- trigger:
+    - platform: time
+      at: "00:01:00"
+  action:
+    - service: calendar.get_events
+      target:
+        entity_id: calendar.anniversaires
+      data:
+        duration:
+          hours: 23
+      response_variable: agenda
+    - variables:
+        events: "{{ agenda['calendar.anniversaires']['events'] }}"
+  sensor:
+    - name: Calendrier Anniversaires
+      unique_id: calendrier_anniversaires
+      icon: mdi:calendar
+      state: "{{ events | count}}"
+      attributes:
+        events: >
+          {%- if events | count > 0 %}
+            {%- for event in events %}
+              {%- if events | count == 1 %}
+                {{ event.summary }}
+              {%- elif events | count > 1 %}
+                {{ event.summary }} <br>
+              {%- endif %}
+            {%- endfor %}
+          {%- else %}
+            Aucun anniversaire
+          {%- endif %}
+
+# Boulot
+- trigger:
+    - platform: time_pattern
+      minutes: /1
+  action:
+    - service: calendar.get_events
+      target:
+        entity_id: calendar.calendrier_boulot
+      data:
+        duration:
+          hours: 24
+      response_variable: agenda
+    - variables:
+        events: "{{ agenda['calendar.calendrier_boulot']['events'] }}"
+  sensor:
+    - name: Calendrier Boulot
+      unique_id: calendrier_boulot
+      icon: mdi:calendar
+      state: "{{ events | count}}"
+      attributes:
+        events: >
+          {%- if events | count > 0 %}
+            {%- for event in events %}
+            {%- set start = event.start | as_datetime | as_local %}
+              {%- if events | count == 1 %}
+                {{ ["Aujourd'hui", 'Demain'][(start.date() - now().date()).days]}} à {{ event.start | as_timestamp | timestamp_custom('%H:%M') }} : {{ event.summary }}
+              {%- elif events | count > 1 %}
+                {{ ["Aujourd'hui", 'Demain'][(start.date() - now().date()).days]}} à {{ event.start | as_timestamp | timestamp_custom('%H:%M') }} : {{ event.summary }} <br>
+              {%- endif %}
+            {%- endfor %}
+          {%- else %}
+            Aucun événement
+          {%- endif %}
+
+# Copro
+- trigger:
+    - platform: time_pattern
+      minutes: /1
+  action:
+    - service: calendar.get_events
+      target:
+        entity_id: calendar.copro
+      data:
+        duration:
+          hours: 24
+      response_variable: agenda
+    - variables:
+        events: "{{ agenda['calendar.copro']['events'] }}"
+  sensor:
+    - name: Calendrier Copro
+      unique_id: calendrier_copro
+      icon: mdi:calendar
+      state: "{{ events | count}}"
+      attributes:
+        events: >
+          {%- if events | count > 0 %}
+            {%- for event in events %}
+            {%- set start = event.start | as_datetime | as_local %}
+              {%- if events | count == 1 %}
+                {{ ["Aujourd'hui", 'Demain'][(start.date() - now().date()).days]}} à {{ event.start | as_timestamp | timestamp_custom('%H:%M') }} : {{ event.summary }}
+              {%- elif events | count > 1 %}
+                {{ ["Aujourd'hui", 'Demain'][(start.date() - now().date()).days]}} à {{ event.start | as_timestamp | timestamp_custom('%H:%M') }} : {{ event.summary }} <br>
+              {%- endif %}
+            {%- endfor %}
+          {%- else %}
+            Aucun événement
+          {%- endif %}
+
+# Jours Fériés
+- trigger:
+    - platform: time
+      at: "00:01:00"
+  action:
+    - service: calendar.get_events
+      target:
+        entity_id: calendar.jours_feries_en_france
+      data:
+        duration:
+          hours: 23
+      response_variable: agenda
+    - variables:
+        events: "{{ agenda['calendar.jours_feries_en_france']['events'] }}"
+  sensor:
+    - name: Calendrier Jours Fériés
+      unique_id: calendrier_jours_feries
+      icon: mdi:calendar
+      state: "{{ events | count}}"
+      attributes:
+        events: >
+          {%- if events | count > 0 %}
+            {%- for event in events %}
+              {%- if events | count == 1 %}
+                {{ event.summary }}
+              {%- elif events | count > 1 %}
+                {{ event.summary }} <br>
+              {%- endif %}
+            {%- endfor %}
+          {%- else %}
+            Aucun événement
+          {%- endif %}
+
+- sensor:
+    ##############################################
+    # CALENDRIER VACANCES SCOLAIRES
+    ##############################################
+
+    - unique_id: vacances_scolaires_detaillees
+      name: Calendrier vacances scolaires détaillées
+      state: >-
+        {% set aujourdhui = states.binary_sensor.vacances_scolaires_aujourdhui.state %}
+        {% set vacances = states.sensor.vacances_scolaires %} 
+        {% set now = as_timestamp(now()) %}
+        {% set prochain_evenement = as_timestamp(state_attr('sensor.vacances_scolaires', 'start_date')) %}
+        {% set jours_restants = ((prochain_evenement - now) / 86400) + 0.5 | round(0) %}            
+        {% if aujourdhui == "on" %}
+            {{ vacances.attributes.description }} jusqu'au {{ as_timestamp(vacances.attributes.end_date) | timestamp_custom('%d/%m', True) }}
+        {% else %}
+            {{ vacances.attributes.description }} dans {{ jours_restants | round(0) }} jour{% if jours_restants > 1 %}s{% endif %}
+        {% endif %}
+
+    - unique_id: vacances_scolaires_compte_a_rebours
+      name: Calendrier vacances scolaires compte à rebours
+      state: >-
+        {% set aujourdhui = states.binary_sensor.vacances_scolaires_aujourdhui.state %}
+        {% set vacances = states.sensor.vacances_scolaires %} 
+        {% set now = as_timestamp(now()) %}
+        {% set prochain_evenement = as_timestamp(state_attr('sensor.vacances_scolaires', 'start_date')) %}
+        {% set jours_restants = ((prochain_evenement - now) / 86400) + 0.5 | round(0) %}            
+        {% if aujourdhui == "on" %}
+          0
+        {% else %}
+            {{ jours_restants | round(0) }}
+        {% endif %}
+
+    - unique_id: vacances_scolaires_duree
+      name: Calendrier vacances scolaires durée en jours
+      state: >-
+        {% set date_debut = as_timestamp(state_attr('sensor.vacances_scolaires', 'start_date')) %}
+        {% set date_fin = as_timestamp(state_attr('sensor.vacances_scolaires', 'end_date')) %}
+
+        {% set jours_difference = (date_fin - date_debut) / 86400 | round(0) %}
+
+        {{ jours_difference | round(0) }} jour{% if jours_difference > 1 %}s{% endif %}
+
+    - unique_id: vacances_scolaires_verif
+      name: Vacances scolaires verif si bientot
+      state: >-
+        {% set nbre_jours = states.sensor.calendrier_vacances_scolaires_compte_a_rebours.state | float(0)%}            
+        {% if nbre_jours <= 15 %}
+          true
+        {% else -%}  
+          false
+        {% endif -%}
+
+    ##############################################
+    # MYENEDIS
+    ##############################################
+    - name: Linky mise à jour
+      icon: "mdi:update"
+      state: >-
+        {% if state_attr('sensor.linky_TON_PDL_consumption', 'lastUpdate') is defined %}
+          {{ as_timestamp(states.sensor.linky_TON_PDL_consumption.attributes.lastUpdate) | timestamp_custom("%d-%m-%Y à %Hh%M") }}
+        {% else %}
+        {% endif %}
+
+    - name: Linky verif j1
+      icon: "mdi:flash"
+      state: >-
+        {% set linky_update = as_timestamp(states.sensor.linky_TON_PDL_consumption.attributes.lastUpdate) | timestamp_custom("%Y-%m-%d") %}
+        {% set linky_date_veille = as_timestamp(states.sensor.linky_TON_PDL_consumption.attributes.yesterdayDate) | timestamp_custom("%Y-%m-%d") %} 
+        {% set date_veille = (as_timestamp(now()) - 86400) | timestamp_custom('%Y-%m-%d') %}              
+        {% set date = states.sensor.date.state %}
+        {% set conso = states.sensor.linky_TON_PDL_consumption.attributes.day_1 %}
+          {% if (linky_update == date) and (conso != 0.0 ) and (linky_date_veille == date_veille) and states.sensor.time.state > "04:00" %}
+            true 
+          {% else %}
+            false 
+          {% endif %}
+
+    - name: "electricite conso veille"
+      unit_of_measurement: "kWh"
+      state: >
+        {{ states.sensor.linky_TON_PDL_consumption.attributes.day_1 |float| round(2)}}
+      icon: "mdi:flash"
+      device_class: "energy"
+      state_class: "total_increasing"
+
+    - name: "electricite conso j2"
+      unit_of_measurement: "kWh"
+      state: >
+        {{ states.sensor.linky_TON_PDL_consumption.attributes.day_2 |float| round(2)}}
+      icon: "mdi:flash"
+      device_class: "energy"
+      state_class: "total_increasing"
+
+    - name: "electricite conso j3"
+      unit_of_measurement: "kWh"
+      state: >
+        {{ states.sensor.linky_TON_PDL_consumption.attributes.day_3 |float| round(2)}}
+      icon: "mdi:flash"
+      device_class: "energy"
+      state_class: "total_increasing"
+
+    - name: "electricite conso j4"
+      unit_of_measurement: "kWh"
+      state: >
+        {{ states.sensor.linky_TON_PDL_consumption.attributes.day_4 |float| round(2)}}
+      icon: "mdi:flash"
+      device_class: "energy"
+      state_class: "total_increasing"
+
+    - name: "electricite conso j5"
+      unit_of_measurement: "kWh"
+      state: >
+        {{ states.sensor.linky_TON_PDL_consumption.attributes.day_5 |float| round(2)}}
+      icon: "mdi:flash"
+      device_class: "energy"
+      state_class: "total_increasing"
+
+    - name: "electricite conso j6"
+      unit_of_measurement: "kWh"
+      state: >
+        {{ states.sensor.linky_TON_PDL_consumption.attributes.day_6 |float| round(2)}}
+      icon: "mdi:flash"
+      device_class: "energy"
+      state_class: "total_increasing"
+
+    - name: "electricite conso j7"
+      unit_of_measurement: "kWh"
+      state: >
+        {{ states.sensor.linky_TON_PDL_consumption.attributes.day_7 | float | round(2) }}
+      icon: "mdi:flash"
+      device_class: "energy"
+      state_class: "total"
+
+    - name: "electricite conso semaine"
+      unit_of_measurement: "kWh"
+      state: >
+        {{ states.sensor.linky_TON_PDL_consumption.attributes.current_week |float| round(2)}}
+      icon: "mdi:flash"
+      device_class: "energy"
+      state_class: "total"
+
+    - name: "electricite conso kwh arrondie"
+      unit_of_measurement: "kWh"
+      state: >
+        {{ states.sensor.linky_TON_PDL_consumption.state |float| round(2)}}
+      icon: "mdi:flash"
+      device_class: "energy"
+      state_class: "total"
+
+    - name: "electricite cout jour avec abo"
+      unit_of_measurement: "EUR /kWh"
+      state: >
+        {{ (states.sensor.linky_TON_PDL_consumption.state|float * states.input_number.prix_electricite.state|float + (states.input_number.prix_abo_electricite.state|float*12/365))|float|round(2) }}
+      icon: "mdi:flash"
+      device_class: "monetary"
+      state_class: "total"
+
+    - name: "electricite cout semaine avec abo"
+      unit_of_measurement: "EUR"
+      state: >
+        {{ (states.sensor.linky_TON_PDL_consumption.attributes.current_week|float * states.input_number.prix_electricite.state|float + (states.input_number.prix_abo_electricite.state|float*12/52))|float|round(2) }}
+      icon: "mdi:flash"
+      device_class: "monetary"
+      state_class: "total"
+
+    - name: "electricite cout mois avec abo"
+      unit_of_measurement: "EUR"
+      state: >
+        {{ (states.sensor.linky_TON_PDL_consumption.attributes.current_month|float * states.input_number.prix_electricite.state|float + states.input_number.prix_abo_electricite.state|float)|float|round(2) }}
+      icon: "mdi:flash"
+      device_class: "monetary"
+      state_class: "total"
+
+    - name: "electricite cout annee avec abo"
+      unit_of_measurement: "EUR"
+      state: >
+        {{ (states.sensor.linky_TON_PDL_consumption.attributes.current_year|float * states.input_number.prix_electricite.state|float + (states.input_number.prix_abo_electricite.state|float*12))|float|round(2) }}
+      icon: "mdi:flash"
+      device_class: "monetary"
+      state_class: "total"
+
+    ########################################
+    # COMPTEUR EAU INTEGRATION DASHBOARD ENERGIE
+    ########################################
+    - name: "compteur d'eau"
+      device_class: "water"
+      unique_id: "current_water"
+      unit_of_measurement: "m³"
+      state: >
+        {{ states('input_number.compteur_eau') }}
+      state_class: total_increasing
+
+    ##############################################
+    # TEMPERATURE
+    ##############################################
+    - name: Température basse
+      unique_id: sensor.temp_basse
+      icon: "mdi:snowflake-thermometer"
+      state: >-
+        {% set cold_rooms = states | 
+          selectattr('entity_id', 'in', state_attr('group.thermo', 'entity_id')) | 
+          selectattr('state', 'lt', '18.2') | 
+          rejectattr('state', 'in', ['unavailable', 'unknown']) | 
+          rejectattr('entity_id', 'search', 'garage') | 
+          list %}
+
+        {% if cold_rooms | count == 0 -%} 
+          OK 
+        {%- elif cold_rooms | count == 1 -%}
+          {{ cold_rooms[0].name }} ({{ cold_rooms[0].state | round(1) }}°)
+        {%- else -%}
+          {%- for room in cold_rooms -%}
+            {{ room.name }} ({{ room.state | round(1) }}°){{ ', ' if not loop.last else '' }}
+          {%- endfor -%}
+        {%- endif -%}
+
+    ##############################################
+    # ALERTES METEO
+    ##############################################
+    - name: Alerte météo France
+      unique_id: sensor.alerte_meteo
+      icon: "mdi:alert"
+      state: >-
+        {%- for attribut in ['Vent violent', 'Orages',
+        'Inondation', 'Pluie-inondation', 'Neige-verglas','Canicule', 'Grand-froid',
+        'Avalanches', 'Vagues-submersion'] %}  
+        {%- if state_attr('sensor.DEPARTEMENT_weather_alert', attribut) != 'Vert' 
+        and state_attr('sensor.DEPARTEMENT_weather_alert', attribut) != None -%}     
+        {{attribut}} ({{state_attr('sensor.DEPARTEMENT_weather_alert', attribut)}})<br>{{"\n"}}
+        {%- endif -%} {% endfor %}
+
+    ##############################################
+    # MONITEUR QUALITE AIR
+    ##############################################
+    - name: "moniteur qualite air temp arrondie"
+      unit_of_measurement: "°C"
+      state: >
+        {{ states.sensor.moniteur_qualite_air_temperature.state |float| round(2)}}
+      icon: "mdi:thermometer"
+      device_class: "temperature"
+      state_class: "measurement"
+
+    ##############################################
+    # PROXIMITY
+    ##############################################
+    - name: Proximity Jérémy
+      unique_id: sensor.proximity_jeremy
+      icon: "mdi:compass"
+      state: >-
+        {{ (states('sensor.appartement_distance_jeremy') | float / 1000) | round(2)}} km - {{ states('sensor.appartement_direction_du_deplacement_de_jeremy') | replace('unknown', 'Inconnu') | replace('stationary', 'Stationnaire') | replace('arrived', 'Arrivé') | replace('away_from', "S'éloigne") | replace('towards', "S'approche")}}
+    - name: Proximity Emma
+      unique_id: sensor.proximity_emma
+      icon: "mdi:compass"
+      state: >-
+        {{ (states('sensor.appartement_distance_emma') | float / 1000) | round(2)}} km - {{ states('sensor.appartement_direction_du_deplacement_de_emma') | replace('unknown', 'Inconnu') | replace('stationary', 'Stationnaire') | replace('arrived', 'Arrivé') | replace('away_from', "S'éloigne") | replace('towards', "S'approche")}}

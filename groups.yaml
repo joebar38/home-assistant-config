@@ -1,0 +1,91 @@
+alarmes:
+    entities:
+      - alarm_control_panel.alarmo
+
+thermo:
+    entities:
+      - sensor.thermo_sdb_temperature
+      - sensor.thermo_chambre_temperature
+      - sensor.thermo_petite_chambre_temperature
+      - sensor.moniteur_qualite_air_temperature
+
+appareil:
+    entities:
+      - device_tracker.hp_deskjet_3630_series_ping
+      - device_tracker.thermostat_netatmo_ping
+      - device_tracker.clim_chambre_ping
+      - device_tracker.clim_salon_ping
+
+connecte:
+    entities:
+      - device_tracker.jeremy_pc_gamer_ping
+      - device_tracker.jeremy_tablette_ping
+      - device_tracker.emma_pc_ping
+      - device_tracker.parsecpi_ping
+      - device_tracker.cadrepi_ping
+      - device_tracker.wallpanel_ping
+
+appareils_charges:
+    entities:
+      - sensor.pixel_6_jh_battery_state
+      - sensor.galaxy_s21_fe_battery_state
+
+Zigbee:
+    entities:
+      - binary_sensor.porte_entree_contact
+      - binary_sensor.porte_coin_nuit_contact
+      - light.lampe_chevet
+      - switch.prise_parsecpi
+      - switch.prise_cadrepi
+      - switch.prise_diffuseur_he
+      - switch.prise_sirene
+      - sensor.thermo_chambre_temperature
+      - sensor.thermo_petite_chambre_temperature
+      - sensor.thermo_sdb_temperature
+      - sensor.moniteur_qualite_air_temperature
+
+Cameras:
+    entities:
+      - camera.camera_cuisine_sd_stream
+      - camera.camera_cuisine_hd_stream
+      - camera.salon
+
+annonces:
+    entities:
+      - script.annonce_dans_sejour
+      - script.annonce_geralt_groupe
+
+thermo batterie:
+    entities:
+      - sensor.thermostat_battery_percent
+      - sensor.thermo_sdb_battery
+      - sensor.thermo_chambre_battery
+      - sensor.thermo_petite_chambre_battery
+      - sensor.moniteur_qualite_air_battery
+
+portes:
+    entities:
+      - binary_sensor.porte_entree_contact
+      - binary_sensor.porte_coin_nuit_contact
+
+person:
+    entities:
+      - person.jeremy
+      - person.emma
+
+jeremy_connecte:
+    entities:
+      - device_tracker.pixel_6_jh
+
+emma_connecte:
+    entities:
+      - device_tracker.galaxy_s21_fe
+
+mode:
+    entities:
+      - input_boolean.cp
+      - input_boolean.vacances
+      - input_boolean.invites
+      - input_boolean.invites_nuit
+      - input_boolean.chauffage_mode_ete
+      - input_boolean.alarme_auto_off

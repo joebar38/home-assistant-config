@@ -1,0 +1,27 @@
+########################################
+# CAMERAS USB
+########################################
+
+  #- platform: ffmpeg
+  #  name: salon_2
+  #  input: /dev/input/video0
+
+########################################
+# CAMERAS POUR DOODS
+########################################
+
+# Salon 1 et 2 détections
+  - platform: local_file
+    file_path: /media/detections/captures/cuisine_detection.jpg 
+    name: cuisine_detection
+  - platform: local_file
+    file_path: /media/detections/captures/salon_detection.jpg 
+    name: salon_detection
+
+# Salon 1 et 2 vérifiées
+  - platform: local_file
+    file_path: /media/detections/verifications/camera.cuisine/verifiee.jpg 
+    name: cuisine_verifiee
+  - platform: local_file
+    file_path: /media/detections/verifications/camera.salon/verifiee.jpg 
+    name: salon_verifiee

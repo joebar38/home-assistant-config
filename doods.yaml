@@ -1,0 +1,13 @@
+  - platform: doods
+    url: !secret doods_url
+    detector: default #ssd_mobilenet_v1_coco_quant_postprocess #tensorflow
+    scan_interval: 10000
+    source:
+      - entity_id: camera.cuisine_detection
+      - entity_id: camera.salon_detection
+    file_out:
+      - "/media/detections/verifications/{{ camera_entity.split('_')[0] }}/verifiee.jpg"
+      - "/media/detections/verifications/{{ camera_entity.split('_')[0] }}/historique/{{ now().strftime('%Y%m%d') }}/{{ now().strftime('%H%M%S') }}.jpg"
+    labels:
+      - name: person
+        confidence: 65
