@@ -12,17 +12,17 @@ Bien le bonjour les homies ! J'ai voulu partager mon interface Home Assistant av
 
 # Tableau de bord :
 
-![Accueil](https://github.com/joebar38/mon-interface-home-assistant/blob/main/Captures/01.png)
+![Accueil](https://github.com/joebar38/home-assistant-config/blob/main/Captures/01.png)
 
-![Energie](https://github.com/joebar38/mon-interface-home-assistant/blob/main/Captures/02.png)
+![Energie](https://github.com/joebar38/home-assistant-config/blob/main/Captures/02.png)
 
-![Système](https://github.com/joebar38/mon-interface-home-assistant/blob/main/Captures/03.png)
+![Système](https://github.com/joebar38/home-assistant-config/blob/main/Captures/03.png)
 
-![Météo/Agenda](https://github.com/joebar38/mon-interface-home-assistant/blob/main/Captures/04.png)
+![Météo/Agenda](https://github.com/joebar38/home-assistant-config/blob/main/Captures/04.png)
 
-![Qualité de l'air](https://github.com/joebar38/mon-interface-home-assistant/blob/main/Captures/05.png)
+![Qualité de l'air](https://github.com/joebar38/home-assistant-config/blob/main/Captures/05.png)
 
-![Chauffage/Clim](https://github.com/joebar38/mon-interface-home-assistant/blob/main/Captures/06.png)
+![Chauffage/Clim](https://github.com/joebar38/home-assistant-config/blob/main/Captures/06.png)
 
 ---
 
@@ -31,23 +31,23 @@ Bien le bonjour les homies ! J'ai voulu partager mon interface Home Assistant av
 Principal : 
 
 
-![Floorplan principal 1](https://github.com/joebar38/mon-interface-home-assistant/blob/main/Captures/10.png)
+![Floorplan principal 1](https://github.com/joebar38/home-assistant-config/blob/main/Captures/10.png)
 
-![Floorplan principal 2](https://github.com/joebar38/mon-interface-home-assistant/blob/main/Captures/11.png)
+![Floorplan principal 2](https://github.com/joebar38/home-assistant-config/blob/main/Captures/11.png)
 
-![Floorplan principal 3](https://github.com/joebar38/mon-interface-home-assistant/blob/main/Captures/12.png)
+![Floorplan principal 3](https://github.com/joebar38/home-assistant-config/blob/main/Captures/12.png)
 
 Page Alarme :
 
-![Floorplan alarme](https://github.com/joebar38/mon-interface-home-assistant/blob/main/Captures/13.png)
+![Floorplan alarme](https://github.com/joebar38/home-assistant-config/blob/main/Captures/13.png)
 
 Page Courses/recettes :
 
-![Floorplan courses recettes](https://github.com/joebar38/mon-interface-home-assistant/blob/main/Captures/14.png)
+![Floorplan courses recettes](https://github.com/joebar38/home-assistant-config/blob/main/Captures/14.png)
 
 Toutes les animations : 
 
-![Floorplan animations](https://github.com/joebar38/mon-interface-home-assistant/blob/main/Captures/15.gif)
+![Floorplan animations](https://github.com/joebar38/home-assistant-config/blob/main/Captures/15.gif)
 
 --- 
 
@@ -135,7 +135,7 @@ _Analyseur de problèmes lovelace, automatisations..._
 [Spotcast](https://github.com/fondberg/spotcast)  
 _Lecture Spotify sur une Chromecast ou sur un appareil Spotify Connect_
 
-[Tapo: Cameras Control](https://github.com/JurajNyiri/mon-interface-home-assistant-Tapo-Control)  
+[Tapo: Cameras Control](https://github.com/JurajNyiri/home-assistant-config-Tapo-Control)  
 _Intégration caméras Tapo_
 
 [Vigieau](https://github.com/kamaradclimber/vigieau)  
