@@ -10,6 +10,10 @@
 
 Bien le bonjour les homies ! J'ai voulu partager mon interface Home Assistant avec vous tous. Il est sûrement perfectible, alors soyez indulgents ! Avec le temps, j'ajouterais un peu plus d'informations quant au fonctionnement des cartes.
 
+La base du Dashboard vient du repo d'Aurel RV : [Son repo](https://github.com/herveaurel/)  
+
+La base du Floorplan vient du repo de re-1st : [Son repo](https://github.com/re-1st/HA-3d-floorplan)  
+
 # Tableau de bord :
 
 ![Accueil](https://github.com/joebar38/home-assistant-config/blob/main/Captures/01.png)
