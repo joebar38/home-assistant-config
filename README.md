@@ -58,7 +58,7 @@ Toutes les animations :
 # MODULES
 
 [AdGuard Home](https://www.home-assistant.io/integrations/adguard/)  
-_Système d'alarme_
+_Bloqueur de publicité_
 
 [DOODS2](https://github.com/snowzach/doods2)  
 _Système de reconnaissance d'objets_
