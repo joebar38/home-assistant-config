@@ -2028,25 +2028,6 @@ views:
               tap_action:
                 action: none
               type: image
-          - type: conditional
-            conditions:
-              - entity: input_select.floorplan_show_agenda
-                state: tout
-            elements:
-              - action: none
-                entity: sun.sun
-                hold_action:
-                  action: none
-                state_image:
-                  above_horizon: /local/floorplan/images/nixx.png
-                  below_horizon: /local/floorplan/night/floorplan_night.png?v=2
-                style:
-                  left: 50%
-                  top: 50%
-                  width: 100%
-                tap_action:
-                  action: none
-                type: image
           - type: custom:config-template-card
             entities:
               - switch.on_off_cadrepi

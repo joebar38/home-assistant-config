@@ -41,6 +41,8 @@ Principal :
 
 ![Floorplan principal 3](https://github.com/joebar38/home-assistant-config/blob/main/Captures/12.png)
 
+![Floorplan nuit](https://github.com/joebar38/home-assistant-config/blob/main/Captures/16.png)
+
 Page Alarme :
 
 ![Floorplan alarme](https://github.com/joebar38/home-assistant-config/blob/main/Captures/13.png)
@@ -195,6 +197,7 @@ _Groupe plusieurs cartes en une seule verticalement_
 | Box internet | `Freebox Mini 4K` |
 | Caméras | `TP-LINK Tapo C210 + D-LINK DCS-8300LH` |
 | Capteurs de porte | `AQARA MCCGQ11LM + SONOFF SNZB-04` |
+| Moniteur qualité d'air | `AQARA TVOC AAQS-S01` |
 | Thermomètres | `SONOFF SNZB-02D` |
 | Ampoule | `LEXMAN RGBTW P45 BULB` |
 | Télécommande | `LEXMAN HR-C99C-Z-C045-B` |
