@@ -99,15 +99,11 @@ _Intégration des appareils ZigBee_
 
 # CAPTEURS
 
-<details>
-
 [Electricity Maps](https://www.home-assistant.io/integrations/co2signal)  
 _Connaître l’intensité de CO2 d’une région spécifique_
 
 [Sensor.Community](https://www.home-assistant.io/integrations/luftdaten)  
 _Capteurs qualité d'air extérieurs PM2.5 et PM10_
-
-</details>
 
 # HACS
 
